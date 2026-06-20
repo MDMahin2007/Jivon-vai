@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import axios from "axios";
 import {
   FaBars,
   FaChartLine,
@@ -31,52 +32,60 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
-  // 🌟 ডাটাবেজ থেকে আসা রিয়েল ডাটার স্টেটসমূহ
+  // Database live states
   const [projects, setProjects] = useState([]);
   const [services, setServices] = useState([]);
   const [dbMessages, setDbMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // মোডাল বা পপআপ ফর্ম হ্যান্ডেল করার স্টেট
+  // Modal controls
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
   const [editItem, setEditItem] = useState(null);
 
-  // ফর্মের ইনপুট স্টেট
+  // Live Selected Asset States
+  const [coverFile, setCoverFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [videoFile, setVideoFile] = useState(null); // 🎥 ডিরেক্ট ভিডিও ফাইল আপলোড স্টেট
+
+  // Form Inputs
   const [formData, setFormData] = useState({
     title: "",
     category: "",
-    coverImage: "",
     description: "",
     featured: false,
   });
 
-  // গ্যালারি আইটেম তৈরি (প্রজেক্ট ডাটা থেকে ম্যাপ করা)
+  // Gallery view mappings
   const galleryItems = useMemo(() => {
-    return projects.map((p) => ({
-      id: p._id,
-      title: p.title,
-      category: p.category,
-      image: p.coverImage,
-    }));
+    return projects.reduce((acc, p) => {
+      if (p.images && p.images.length > 0) {
+        p.images.forEach((img, idx) => {
+          acc.push({
+            id: `${p._id}-${idx}`,
+            title: `${p.title} (View ${idx + 1})`,
+            category: p.category,
+            image: img,
+          });
+        });
+      }
+      return acc;
+    }, []);
   }, [projects]);
 
-  // 🌟 ডাটাবেজ থেকে সমস্ত ডাটা ফেচ করার useEffect
+  // Synchronize with database
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        // প্রজেক্ট ফেচ
         const resProj = await fetch("http://localhost:5000/api/projects");
         const dataProj = await resProj.json();
         if (dataProj.success) setProjects(dataProj.data || []);
 
-        // সার্ভিস ফেচ
         const resServ = await fetch("http://localhost:5000/api/services");
         const dataServ = await resServ.json();
         if (dataServ.success) setServices(dataServ.data || []);
 
-        // মেসেজ ফেচ
         const resMsg = await fetch(
           "http://localhost:5000/api/contact/contacts",
         );
@@ -92,15 +101,12 @@ export default function AdminDashboard() {
     fetchAllData();
   }, []);
 
-  // কন্টাক্ট মেসেজ ডিলিট করার ফাংশন
   const handleDeleteMessage = async (messageId) => {
     if (window.confirm("Are you sure you want to delete this message?")) {
       try {
         const response = await fetch(
           `http://localhost:5000/api/contact/contacts/${messageId}`,
-          {
-            method: "DELETE",
-          },
+          { method: "DELETE" },
         );
         if (response.ok) {
           setDbMessages((prev) =>
@@ -114,15 +120,16 @@ export default function AdminDashboard() {
     }
   };
 
-  // মোডাল ওপেন করার ফাংশন
   const handleOpenModal = (type, item = null) => {
     setModalType(type);
     setEditItem(item);
+    setCoverFile(null);
+    setGalleryFiles([]);
+    setVideoFile(null);
     if (item) {
       setFormData({
         title: item.title || "",
         category: item.category || "",
-        coverImage: item.coverImage || item.image || "",
         description: item.description || "",
         featured: item.featured || false,
       });
@@ -130,7 +137,6 @@ export default function AdminDashboard() {
       setFormData({
         title: "",
         category: "",
-        coverImage: "",
         description: "",
         featured: false,
       });
@@ -138,35 +144,38 @@ export default function AdminDashboard() {
     setModalOpen(true);
   };
 
-  // 🌟 ডাটাবেজে সাবমিট (CREATE & UPDATE API CALL)
+  // একসাথে ৫-৬টি ইমেজ সিলেক্ট করার ফাংশন
+  const handleGallerySelection = (e) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setGalleryFiles(selectedFiles);
+    }
+  };
+
+  const handleRemoveSelectedImage = (index) => {
+    setGalleryFiles((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Form submit handler with FormData + Axios
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     const isProject = modalType === "Project" || modalType === "Gallery";
-    const apiUrl = isProject
-      ? "http://localhost:5000/api/projects"
-      : "http://localhost:5000/api/services";
-    const method = editItem ? "PUT" : "POST";
-    const url = editItem ? `${apiUrl}/${editItem._id || editItem.id}` : apiUrl;
 
-    try {
-      const response = await fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const resData = await response.json();
-
-      if (resData.success) {
-        if (isProject) {
-          if (editItem) {
-            setProjects((prev) =>
-              prev.map((p) => (p._id === editItem._id ? resData.data : p)),
-            );
-          } else {
-            setProjects((prev) => [resData.data, ...prev]);
-          }
-        } else {
+    if (!isProject) {
+      const apiUrl = "http://localhost:5000/api/services";
+      const method = editItem ? "PUT" : "POST";
+      const url = editItem
+        ? `${apiUrl}/${editItem._id || editItem.id}`
+        : apiUrl;
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const resData = await response.json();
+        if (resData.success) {
           if (editItem) {
             setServices((prev) =>
               prev.map((s) => (s._id === editItem._id ? resData.data : s)),
@@ -174,21 +183,78 @@ export default function AdminDashboard() {
           } else {
             setServices((prev) => [resData.data, ...prev]);
           }
+          alert("Service saved successfully!");
+          setModalOpen(false);
         }
-        alert(`${modalType} saved successfully in Database!`);
-      } else {
-        alert(resData.message || "Failed to save data.");
+      } catch (err) {
+        alert("Server error!");
       }
-    } catch (error) {
-      console.error("Submit error:", error);
-      alert("Server error occurred!");
+      return;
     }
 
-    setModalOpen(false);
-    setEditItem(null);
+    // 🌟 [ভ্যালিডেশন ফিক্স]: ডাটাবেজ মডেলে কাভার ইমেজ required। তাই নতুন প্রজেক্টে কাভার ইমেজ আবশ্যিক করা হলো
+    if (!editItem && !coverFile) {
+      alert("Error: Project Cover Photo is required to publish a new project!");
+      return;
+    }
+
+    // FormData তৈরি করা লাইভ ফাইল আপলোডের জন্য
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("category", formData.category);
+    data.append("description", formData.description);
+    data.append("featured", formData.featured);
+
+    if (coverFile) {
+      data.append("coverImage", coverFile);
+    }
+
+    // ৫-৬টি ছবি লুপ চালিয়ে ফর্মে পুশ করা হচ্ছে
+    if (galleryFiles.length > 0) {
+      galleryFiles.forEach((file) => {
+        data.append("images", file);
+      });
+    }
+
+    // 🎥 ভিডিও ফাইল সরাসরি ফর্মে পুশ করা হচ্ছে
+    if (videoFile) {
+      data.append("videoFile", videoFile);
+    }
+
+    const url = editItem
+      ? `http://localhost:5000/api/projects/${editItem._id || editItem.id}`
+      : "http://localhost:5000/api/projects";
+
+    const method = editItem ? "put" : "post";
+
+    try {
+      const res = await axios({
+        method: method,
+        url: url,
+        data: data,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.success) {
+        if (editItem) {
+          setProjects((prev) =>
+            prev.map((p) => (p._id === editItem._id ? res.data.data : p)),
+          );
+        } else {
+          setProjects((prev) => [res.data.data, ...prev]);
+        }
+        alert("Project uploaded/updated successfully with all media!");
+        setModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Upload error response:", error.response?.data);
+      // 🌟 [ফিক্সড এরর অ্যালার্ট]: ব্যাকএন্ড থেকে আসা আসল মঙ্গুস/ক্লাউডিনারি এরর মেসেজটি সরাসরি ইউজারের সামনে শো করবে
+      const backendMessage =
+        error.response?.data?.message || "Check file sizes or format.";
+      alert(`Upload failed: ${backendMessage}`);
+    }
   };
 
-  // 🌟 ডাটাবেজ থেকে রিয়েল ডিলিট (DELETE API CALL)
   const handleItemDelete = async (type, id) => {
     if (
       window.confirm(
@@ -203,14 +269,13 @@ export default function AdminDashboard() {
       try {
         const response = await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
         const resData = await response.json();
-
         if (resData.success) {
           if (isProject) {
             setProjects((prev) => prev.filter((p) => p._id !== id));
           } else {
             setServices((prev) => prev.filter((s) => s._id !== id));
           }
-          alert(`${type} successfully deleted from Database!`);
+          alert(`${type} successfully deleted!`);
         }
       } catch (error) {
         alert("Server error during delete.");
@@ -277,7 +342,6 @@ export default function AdminDashboard() {
                 <FaTimes size={18} />
               </button>
             </div>
-
             <nav className="flex-1 px-4 py-6 space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -300,14 +364,13 @@ export default function AdminDashboard() {
                 to="/admin"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-red-500"
               >
-                <FaSignOutAlt size={15} />
-                Logout
+                <FaSignOutAlt size={15} /> Logout
               </Link>
             </div>
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Main Content Area */}
         <div className="flex-1 min-w-0 relative z-10">
           <header
             className={`sticky top-0 z-30 border-b backdrop-blur-xl ${darkMode ? "border-white/10 bg-black/50" : "border-black/10 bg-white/70"}`}
@@ -368,7 +431,7 @@ export default function AdminDashboard() {
                     darkMode={darkMode}
                     onEdit={(item) => handleOpenModal("Gallery", item)}
                     onDelete={(id) => handleItemDelete("Gallery Item", id)}
-                    onAddClick={() => handleOpenModal("Gallery")}
+                    onAddClick={() => handleOpenModal("Project")}
                   />
                 )}
                 {section === "services" && (
@@ -397,11 +460,11 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* 🌟 ডায়নামিক ফর্ম মোডাল */}
+      {/* মোডাল ফর্ম: ছবি ও ভিডিও আপলোড প্লাস লাইভ প্রিভিউ */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
           <div
-            className={`w-full max-w-md p-6 border shadow-2xl ${darkMode ? "bg-[#090909] border-white/10 text-white" : "bg-white border-black/10 text-gray-900"}`}
+            className={`w-full max-w-4xl p-6 border shadow-2xl my-8 ${darkMode ? "bg-[#090909] border-white/10 text-white" : "bg-white border-black/10 text-gray-900"}`}
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold">
@@ -414,63 +477,193 @@ export default function AdminDashboard() {
                 <FaTimes />
               </button>
             </div>
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              <label className="block text-xs uppercase tracking-widest text-gray-400">
-                Title / Name
-                <input
-                  required
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
-                />
-              </label>
-              <label className="block text-xs uppercase tracking-widest text-gray-400">
-                Category
-                <input
-                  required
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
-                />
-              </label>
-              <label className="block text-xs uppercase tracking-widest text-gray-400">
-                Image URL Path
-                <input
-                  required
-                  type="text"
-                  placeholder="/img/projects/p1.jpg"
-                  value={formData.coverImage}
-                  onChange={(e) =>
-                    setFormData({ ...formData, coverImage: e.target.value })
-                  }
-                  className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
-                />
-              </label>
-              {modalType === "Service" && (
-                <label className="block text-xs uppercase tracking-widest text-gray-400">
-                  Description
-                  <textarea
-                    required
-                    rows="3"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
-                  />
-                </label>
-              )}
+
+            <form onSubmit={handleFormSubmit} className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Side Texts */}
+                <div className="space-y-4">
+                  <label className="block text-xs uppercase tracking-widest text-gray-400">
+                    Title / Name
+                    <input
+                      required
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
+                    />
+                  </label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400">
+                    Category
+                    <input
+                      required
+                      type="text"
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                      className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
+                    />
+                  </label>
+
+                  {(modalType === "Service" || modalType === "Project") && (
+                    <label className="block text-xs uppercase tracking-widest text-gray-400">
+                      Description
+                      <textarea
+                        required
+                        rows="4"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Right Side Assets Section */}
+                {(modalType === "Project" || modalType === "Gallery") && (
+                  <div className="p-5 bg-black/20 border border-white/5 rounded-lg space-y-5">
+                    {/* 1. Cover Photo */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
+                        1. Project Cover Photo{" "}
+                        {!editItem && <span className="text-red-500">*</span>}
+                      </label>
+                      {editItem?.coverImage && !coverFile && (
+                        <div className="mb-2 relative w-24 h-16 border border-white/10">
+                          <img
+                            src={editItem.coverImage}
+                            alt="Current"
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[9px] text-center text-gray-300">
+                            Live Cover
+                          </span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) =>
+                          setCoverFile(
+                            e.target.files ? e.target.files[0] : null,
+                          )
+                        }
+                        className={`w-full text-xs text-gray-400 border p-2 ${darkMode ? "bg-black/40 border-white/10" : "bg-gray-50 border-black/10"}`}
+                      />
+                      {coverFile && (
+                        <p className="text-[11px] text-green-400 mt-1">
+                          ✓ New Cover Staged: {coverFile.name}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 2. Gallery Photos (5-6 Images Selection) */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
+                        2. Gallery Images (Select multiple)
+                      </label>
+                      {editItem?.images && editItem.images.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-[10px] text-gray-400 uppercase mb-1">
+                            Active Database Images ({editItem.images.length}):
+                          </p>
+                          <div className="flex flex-wrap gap-2 max-h-[80px] overflow-y-auto p-1 bg-black/10 border border-white/5">
+                            {editItem.images.map((imgUrl, i) => (
+                              <img
+                                key={i}
+                                src={imgUrl}
+                                alt="Gallery"
+                                className="w-12 h-12 object-cover border border-white/10"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleGallerySelection}
+                        className={`w-full text-xs text-gray-400 border p-2 ${darkMode ? "bg-black/40 border-white/10" : "bg-gray-50 border-black/10"}`}
+                      />
+                      {galleryFiles.length > 0 && (
+                        <div className="mt-2 p-2 bg-black/30 rounded border border-white/5 max-h-[110px] overflow-y-auto space-y-1">
+                          <p className="text-[10px] text-primary font-bold uppercase">
+                            New Staged Queue ({galleryFiles.length}):
+                          </p>
+                          {galleryFiles.map((file, i) => (
+                            <div
+                              key={i}
+                              className="flex justify-between items-center text-[11px] text-gray-400"
+                            >
+                              <span className="truncate flex-1">
+                                ✓ {file.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSelectedImage(i)}
+                                className="text-red-500 hover:text-red-400 ml-2"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 3. Direct Video File Upload 🎥 */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
+                        3. Project Video File (Direct Choose File)
+                      </label>
+                      {editItem?.videoUrl && !videoFile && (
+                        <div className="mb-2 text-[11px] text-yellow-500 truncate font-mono">
+                          🎥 Current: {editItem.videoUrl}
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          const file = e.target.files
+                            ? e.target.files[0]
+                            : null;
+                          // 🌟 [বোনাস সেফটি চেক]: ফ্রি ক্লাউডিনারিতে বড় ফাইলের এরর এড়াতে ৪০ এমবি লিমিট অ্যালার্ট
+                          if (file && file.size > 40 * 1024 * 1024) {
+                            alert(
+                              "Video file is too large! Please upload a video under 40MB for Cloudinary Free tier.",
+                            );
+                            e.target.value = null;
+                            setVideoFile(null);
+                          } else {
+                            setVideoFile(file);
+                          }
+                        }}
+                        className={`w-full text-xs text-gray-400 border p-2 ${darkMode ? "bg-black/40 border-white/10" : "bg-gray-50 border-black/10"}`}
+                      />
+                      {videoFile && (
+                        <p className="text-[11px] text-blue-400 mt-1">
+                          🎥 Video Ready: {videoFile.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="w-full bg-primary text-dark font-bold text-xs tracking-widest py-3 hover:bg-primary-hover transition-colors"
+                className="w-full bg-primary text-dark font-bold text-xs tracking-widest py-3.5 hover:bg-primary-hover transition-colors shadow-lg"
               >
-                SAVE TO DATABASE
+                SAVE & PUBLISH TO LIVE DATABASE
               </button>
             </form>
           </div>
@@ -480,7 +673,6 @@ export default function AdminDashboard() {
   );
 }
 
-// সাব-কম্পোনেন্টসমূহ
 function DashboardHome({
   stats,
   projects,
@@ -582,7 +774,7 @@ function ProjectsManagement({
         >
           <td className="px-5 py-4 flex items-center gap-3">
             <img
-              src={project.coverImage}
+              src={project.coverImage || "/img/projects/p1.jpg"}
               alt=""
               className="h-10 w-14 object-cover border border-white/10"
             />
@@ -652,7 +844,7 @@ function GalleryManagement({
                 <ActionButtons
                   darkMode={darkMode}
                   onEdit={() => onEdit(item)}
-                  onDelete={() => onDelete(item.id)}
+                  onDelete={() => onDelete(item.id.split("-")[0])}
                 />
               </div>
             </div>
