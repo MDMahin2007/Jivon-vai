@@ -1,10 +1,10 @@
 import express from "express";
 import Project from "../models/project.model.js";
-import uploadCloud from "../config/cloudinaryConfig.js"; // 🌟 [ফিক্সড পাথ] আপনার ফাইলটি config ফোল্ডারে আছে
+import uploadCloud from "../config/cloudinaryConfig.js";
 
 const router = express.Router();
 
-// ১. সব প্রজেক্ট নিয়ে আসা
+// ১. Shob project niye asa
 router.get("/", async (req, res) => {
     try {
         const projects = await Project.find().sort({ createdAt: -1 });
@@ -14,34 +14,46 @@ router.get("/", async (req, res) => {
     }
 });
 
-// ২. নতুন প্রজেক্ট তৈরি করা (Create Project)
+// ২. Single Project details niye asa
+router.get("/:id", async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+        res.json({ success: true, data: project });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ৩. New project create kora
 router.post("/", uploadCloud.fields([
     { name: 'coverImage', maxCount: 1 },
     { name: 'images', maxCount: 15 },
     { name: 'videoFile', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        // ফাইল থাকলে ক্লাউডিনারি পাথ আসবে, না থাকলে খালি থাকবে
         const coverImageUrl = req.files && req.files['coverImage'] ? req.files['coverImage'][0].path : '';
         const galleryUrls = req.files && req.files['images'] ? req.files['images'].map(file => file.path) : [];
         const videoUrl = req.files && req.files['videoFile'] ? req.files['videoFile'][0].path : '';
 
-        // ভ্যালিডেশন চেক: মডেলে কাভার ইমেজ রিকোয়ার্ড (required: true) করা আছে
         if (!coverImageUrl) {
             return res.status(400).json({ success: false, message: "Cover image is required!" });
         }
 
-        const projectData = {
+        const newProject = new Project({
             title: req.body.title,
             category: req.body.category,
             description: req.body.description || '',
-            videoUrl: videoUrl || req.body.videoUrl || '', // সরাসরি ফাইল না থাকলে লিঙ্ক ব্যাকআপ হিসেবে কাজ করবে
             featured: req.body.featured === 'true' || req.body.featured === true,
             coverImage: coverImageUrl,
-            images: galleryUrls
-        };
+            images: galleryUrls,
+            videoUrl: videoUrl || req.body.videoUrl || '',
+            client: req.body.client || '',
+            location: req.body.location || '',
+            year: req.body.year || '',
+            scale: req.body.scale || ''
+        });
 
-        const newProject = new Project(projectData);
         await newProject.save();
         res.json({ success: true, data: newProject });
     } catch (error) {
@@ -49,7 +61,7 @@ router.post("/", uploadCloud.fields([
     }
 });
 
-// ৩. প্রজেক্ট আপডেট বা এডিট করা (Update Project)
+// ৪. Project Update / Change Kora (🌟 Full Fixed)
 router.put("/:id", uploadCloud.fields([
     { name: 'coverImage', maxCount: 1 },
     { name: 'images', maxCount: 15 },
@@ -57,9 +69,7 @@ router.put("/:id", uploadCloud.fields([
 ]), async (req, res) => {
     try {
         const existingProject = await Project.findById(req.params.id);
-        if (!existingProject) {
-            return res.status(404).json({ success: false, message: "Project not found" });
-        }
+        if (!existingProject) return res.status(404).json({ success: false, message: "Project not found" });
 
         let coverImageUrl = existingProject.coverImage;
         if (req.files && req.files['coverImage']) {
@@ -82,10 +92,14 @@ router.put("/:id", uploadCloud.fields([
             title: req.body.title || existingProject.title,
             category: req.body.category || existingProject.category,
             description: req.body.description !== undefined ? req.body.description : existingProject.description,
-            videoUrl: videoUrl,
             featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
             coverImage: coverImageUrl,
-            images: galleryUrls
+            images: galleryUrls,
+            videoUrl: videoUrl,
+            client: req.body.client !== undefined ? req.body.client : existingProject.client,
+            location: req.body.location !== undefined ? req.body.location : existingProject.location,
+            year: req.body.year !== undefined ? req.body.year : existingProject.year,
+            scale: req.body.scale !== undefined ? req.body.scale : existingProject.scale
         };
 
         const updatedProject = await Project.findByIdAndUpdate(req.params.id, updatedData, { new: true });
@@ -95,7 +109,7 @@ router.put("/:id", uploadCloud.fields([
     }
 });
 
-// ৪. প্রজেক্ট ডিলিট করা
+// ৫. Delete route
 router.delete("/:id", async (req, res) => {
     try {
         await Project.findByIdAndDelete(req.params.id);

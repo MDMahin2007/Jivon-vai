@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   // Live Selected Asset States
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
-  const [videoFile, setVideoFile] = useState(null); // 🎥 ডিরেক্ট ভিডিও ফাইল আপলোড স্টেট
+  const [videoFile, setVideoFile] = useState(null);
 
   // Form Inputs
   const [formData, setFormData] = useState({
@@ -55,6 +55,12 @@ export default function AdminDashboard() {
     description: "",
     featured: false,
   });
+
+  // 📋 PROJECT SHEET এর নতুন ৪টি স্টেট (ফিক্সড)
+  const [clientText, setClientText] = useState("");
+  const [locationText, setLocationText] = useState("");
+  const [yearText, setYearText] = useState("");
+  const [scaleText, setScaleText] = useState("");
 
   // Gallery view mappings
   const galleryItems = useMemo(() => {
@@ -126,6 +132,7 @@ export default function AdminDashboard() {
     setCoverFile(null);
     setGalleryFiles([]);
     setVideoFile(null);
+
     if (item) {
       setFormData({
         title: item.title || "",
@@ -133,6 +140,11 @@ export default function AdminDashboard() {
         description: item.description || "",
         featured: item.featured || false,
       });
+      // এডিট করার সময় আগের ডাটা লোড হবে
+      setClientText(item.client || "");
+      setLocationText(item.location || "");
+      setYearText(item.year || "");
+      setScaleText(item.scale || "");
     } else {
       setFormData({
         title: "",
@@ -140,11 +152,14 @@ export default function AdminDashboard() {
         description: "",
         featured: false,
       });
+      setClientText("");
+      setLocationText("");
+      setYearText("");
+      setScaleText("");
     }
     setModalOpen(true);
   };
 
-  // একসাথে ৫-৬টি ইমেজ সিলেক্ট করার ফাংশন
   const handleGallerySelection = (e) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
@@ -156,10 +171,8 @@ export default function AdminDashboard() {
     setGalleryFiles((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  // Form submit handler with FormData + Axios
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
     const isProject = modalType === "Project" || modalType === "Gallery";
 
     if (!isProject) {
@@ -192,39 +205,32 @@ export default function AdminDashboard() {
       return;
     }
 
-    // 🌟 [ভ্যালিডেশন ফিক্স]: ডাটাবেজ মডেলে কাভার ইমেজ required। তাই নতুন প্রজেক্টে কাভার ইমেজ আবশ্যিক করা হলো
     if (!editItem && !coverFile) {
       alert("Error: Project Cover Photo is required to publish a new project!");
       return;
     }
 
-    // FormData তৈরি করা লাইভ ফাইল আপলোডের জন্য
     const data = new FormData();
     data.append("title", formData.title);
     data.append("category", formData.category);
     data.append("description", formData.description);
     data.append("featured", formData.featured);
 
-    if (coverFile) {
-      data.append("coverImage", coverFile);
-    }
+    // 📋 ক্লায়েন্ট ও অন্যান্য টেক্সট ডাটা FormData তে পুশ করা হলো
+    data.append("client", clientText);
+    data.append("location", locationText);
+    data.append("year", yearText);
+    data.append("scale", scaleText);
 
-    // ৫-৬টি ছবি লুপ চালিয়ে ফর্মে পুশ করা হচ্ছে
+    if (coverFile) data.append("coverImage", coverFile);
     if (galleryFiles.length > 0) {
-      galleryFiles.forEach((file) => {
-        data.append("images", file);
-      });
+      galleryFiles.forEach((file) => data.append("images", file));
     }
-
-    // 🎥 ভিডিও ফাইল সরাসরি ফর্মে পুশ করা হচ্ছে
-    if (videoFile) {
-      data.append("videoFile", videoFile);
-    }
+    if (videoFile) data.append("videoFile", videoFile);
 
     const url = editItem
       ? `http://localhost:5000/api/projects/${editItem._id || editItem.id}`
       : "http://localhost:5000/api/projects";
-
     const method = editItem ? "put" : "post";
 
     try {
@@ -236,19 +242,16 @@ export default function AdminDashboard() {
       });
 
       if (res.data.success) {
-        if (editItem) {
-          setProjects((prev) =>
-            prev.map((p) => (p._id === editItem._id ? res.data.data : p)),
-          );
-        } else {
-          setProjects((prev) => [res.data.data, ...prev]);
-        }
+        // রিয়েলটাইম ডাটা রিফ্রেশ
+        const resProj = await fetch("http://localhost:5000/api/projects");
+        const dataProj = await resProj.json();
+        if (dataProj.success) setProjects(dataProj.data || []);
+
         alert("Project uploaded/updated successfully with all media!");
         setModalOpen(false);
       }
     } catch (error) {
       console.error("Upload error response:", error.response?.data);
-      // 🌟 [ফিক্সড এরর অ্যালার্ট]: ব্যাকএন্ড থেকে আসা আসল মঙ্গুস/ক্লাউডিনারি এরর মেসেজটি সরাসরি ইউজারের সামনে শো করবে
       const backendMessage =
         error.response?.data?.message || "Check file sizes or format.";
       alert(`Upload failed: ${backendMessage}`);
@@ -460,7 +463,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* মোডাল ফর্ম: ছবি ও ভিডিও আপলোড প্লাস লাইভ প্রিভিউ */}
+      {/* মোডাল ফর্ম */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
           <div
@@ -494,6 +497,7 @@ export default function AdminDashboard() {
                       className={`w-full mt-1 p-2.5 text-sm border focus:outline-none focus:border-primary ${darkMode ? "bg-black/40 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
                     />
                   </label>
+
                   <label className="block text-xs uppercase tracking-widest text-gray-400">
                     Category
                     <input
@@ -507,12 +511,63 @@ export default function AdminDashboard() {
                     />
                   </label>
 
+                  {/* 📋 নতুন প্রোজেক্ট শিট ইনপুট এরিয়া (ফিক্সড) */}
+                  {modalType === "Project" && (
+                    <div className="p-4 border border-dashed border-primary/20 bg-primary/[0.02] space-y-3">
+                      <p className="text-[10px] text-primary font-bold uppercase tracking-wider">
+                        Project Sheet Information
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="text-[10px] uppercase text-gray-400">
+                          Client
+                          <input
+                            type="text"
+                            value={clientText}
+                            onChange={(e) => setClientText(e.target.value)}
+                            placeholder="e.g. Arcforma"
+                            className={`w-full mt-1 p-2 text-xs border ${darkMode ? "bg-black/60 border-white/10 text-white" : "bg-gray-100 border-black/10"}`}
+                          />
+                        </label>
+                        <label className="text-[10px] uppercase text-gray-400">
+                          Location
+                          <input
+                            type="text"
+                            value={locationText}
+                            onChange={(e) => setLocationText(e.target.value)}
+                            placeholder="e.g. Dhaka"
+                            className={`w-full mt-1 p-2 text-xs border ${darkMode ? "bg-black/60 border-white/10 text-white" : "bg-gray-100 border-black/10"}`}
+                          />
+                        </label>
+                        <label className="text-[10px] uppercase text-gray-400">
+                          Year
+                          <input
+                            type="text"
+                            value={yearText}
+                            onChange={(e) => setYearText(e.target.value)}
+                            placeholder="e.g. 2026"
+                            className={`w-full mt-1 p-2 text-xs border ${darkMode ? "bg-black/60 border-white/10 text-white" : "bg-gray-100 border-black/10"}`}
+                          />
+                        </label>
+                        <label className="text-[10px] uppercase text-gray-400">
+                          Scale
+                          <input
+                            type="text"
+                            value={scaleText}
+                            onChange={(e) => setScaleText(e.target.value)}
+                            placeholder="e.g. 1500 Sft"
+                            className={`w-full mt-1 p-2 text-xs border ${darkMode ? "bg-black/60 border-white/10 text-white" : "bg-gray-100 border-black/10"}`}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   {(modalType === "Service" || modalType === "Project") && (
                     <label className="block text-xs uppercase tracking-widest text-gray-400">
                       Description
                       <textarea
                         required
-                        rows="4"
+                        rows="3"
                         value={formData.description}
                         onChange={(e) =>
                           setFormData({
@@ -529,7 +584,6 @@ export default function AdminDashboard() {
                 {/* Right Side Assets Section */}
                 {(modalType === "Project" || modalType === "Gallery") && (
                   <div className="p-5 bg-black/20 border border-white/5 rounded-lg space-y-5">
-                    {/* 1. Cover Photo */}
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
                         1. Project Cover Photo{" "}
@@ -542,9 +596,6 @@ export default function AdminDashboard() {
                             alt="Current"
                             className="w-full h-full object-cover"
                           />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[9px] text-center text-gray-300">
-                            Live Cover
-                          </span>
                         </div>
                       )}
                       <input
@@ -557,35 +608,12 @@ export default function AdminDashboard() {
                         }
                         className={`w-full text-xs text-gray-400 border p-2 ${darkMode ? "bg-black/40 border-white/10" : "bg-gray-50 border-black/10"}`}
                       />
-                      {coverFile && (
-                        <p className="text-[11px] text-green-400 mt-1">
-                          ✓ New Cover Staged: {coverFile.name}
-                        </p>
-                      )}
                     </div>
 
-                    {/* 2. Gallery Photos (5-6 Images Selection) */}
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
-                        2. Gallery Images (Select multiple)
+                        2. Gallery Images
                       </label>
-                      {editItem?.images && editItem.images.length > 0 && (
-                        <div className="mb-3">
-                          <p className="text-[10px] text-gray-400 uppercase mb-1">
-                            Active Database Images ({editItem.images.length}):
-                          </p>
-                          <div className="flex flex-wrap gap-2 max-h-[80px] overflow-y-auto p-1 bg-black/10 border border-white/5">
-                            {editItem.images.map((imgUrl, i) => (
-                              <img
-                                key={i}
-                                src={imgUrl}
-                                alt="Gallery"
-                                className="w-12 h-12 object-cover border border-white/10"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
                       <input
                         type="file"
                         accept="image/*"
@@ -595,9 +623,6 @@ export default function AdminDashboard() {
                       />
                       {galleryFiles.length > 0 && (
                         <div className="mt-2 p-2 bg-black/30 rounded border border-white/5 max-h-[110px] overflow-y-auto space-y-1">
-                          <p className="text-[10px] text-primary font-bold uppercase">
-                            New Staged Queue ({galleryFiles.length}):
-                          </p>
                           {galleryFiles.map((file, i) => (
                             <div
                               key={i}
@@ -619,41 +644,20 @@ export default function AdminDashboard() {
                       )}
                     </div>
 
-                    {/* 3. Direct Video File Upload 🎥 */}
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
-                        3. Project Video File (Direct Choose File)
+                        3. Project Video File
                       </label>
-                      {editItem?.videoUrl && !videoFile && (
-                        <div className="mb-2 text-[11px] text-yellow-500 truncate font-mono">
-                          🎥 Current: {editItem.videoUrl}
-                        </div>
-                      )}
                       <input
                         type="file"
                         accept="video/*"
-                        onChange={(e) => {
-                          const file = e.target.files
-                            ? e.target.files[0]
-                            : null;
-                          // 🌟 [বোনাস সেফটি চেক]: ফ্রি ক্লাউডিনারিতে বড় ফাইলের এরর এড়াতে ৪০ এমবি লিমিট অ্যালার্ট
-                          if (file && file.size > 40 * 1024 * 1024) {
-                            alert(
-                              "Video file is too large! Please upload a video under 40MB for Cloudinary Free tier.",
-                            );
-                            e.target.value = null;
-                            setVideoFile(null);
-                          } else {
-                            setVideoFile(file);
-                          }
-                        }}
+                        onChange={(e) =>
+                          setVideoFile(
+                            e.target.files ? e.target.files[0] : null,
+                          )
+                        }
                         className={`w-full text-xs text-gray-400 border p-2 ${darkMode ? "bg-black/40 border-white/10" : "bg-gray-50 border-black/10"}`}
                       />
-                      {videoFile && (
-                        <p className="text-[11px] text-blue-400 mt-1">
-                          🎥 Video Ready: {videoFile.name}
-                        </p>
-                      )}
                     </div>
                   </div>
                 )}
@@ -673,6 +677,7 @@ export default function AdminDashboard() {
   );
 }
 
+// নিচের বাকি DataTable, ActionButtons, DashboardHome কোডগুলো অপরিবর্তিত থাকবে...
 function DashboardHome({
   stats,
   projects,
@@ -724,34 +729,35 @@ function DashboardHome({
     </div>
   );
 }
-
 function StatsGrid({ stats, darkMode }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      {" "}
       {stats.map((stat) => (
         <div
           key={stat.label}
           className={`border p-5 shadow-xl ${darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"}`}
         >
+          {" "}
           <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
             {stat.label}
-          </p>
+          </p>{" "}
           <div className="mt-4 flex items-end justify-between">
+            {" "}
             <span
               className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}
             >
               {stat.value}
-            </span>
+            </span>{" "}
             <span className="text-[11px] text-primary font-medium">
               {stat.change}
-            </span>
-          </div>
+            </span>{" "}
+          </div>{" "}
         </div>
-      ))}
+      ))}{" "}
     </div>
   );
 }
-
 function ProjectsManagement({
   projects,
   darkMode,
@@ -767,41 +773,44 @@ function ProjectsManagement({
       darkMode={darkMode}
       onActionClick={onAddClick}
     >
+      {" "}
       {projects.map((project) => (
         <tr
           key={project._id}
           className={`border-t ${darkMode ? "border-white/10" : "border-black/10"}`}
         >
+          {" "}
           <td className="px-5 py-4 flex items-center gap-3">
+            {" "}
             <img
               src={project.coverImage || "/img/projects/p1.jpg"}
               alt=""
               className="h-10 w-14 object-cover border border-white/10"
-            />
+            />{" "}
             <span
               className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
             >
               {project.title}
-            </span>
-          </td>
+            </span>{" "}
+          </td>{" "}
           <td
             className={`px-5 py-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}
           >
             {project.category}
-          </td>
+          </td>{" "}
           <td className="px-5 py-4">
+            {" "}
             <ActionButtons
               darkMode={darkMode}
               onEdit={() => onEdit(project)}
               onDelete={() => onDelete(project._id)}
-            />
-          </td>
+            />{" "}
+          </td>{" "}
         </tr>
-      ))}
+      ))}{" "}
     </DataTable>
   );
 }
-
 function GalleryManagement({
   galleryItems,
   darkMode,
@@ -811,50 +820,59 @@ function GalleryManagement({
 }) {
   return (
     <div className="space-y-5">
+      {" "}
       <div
         className={`flex justify-between items-center border-b pb-4 ${darkMode ? "border-white/10" : "border-black/10"}`}
       >
+        {" "}
         <h2
           className={`text-lg font-bold ${darkMode ? "text-white" : "text-gray-900"}`}
         >
           Gallery Collection
-        </h2>
+        </h2>{" "}
         <button
           onClick={onAddClick}
           className="bg-primary text-dark px-4 py-2.5 text-xs font-bold tracking-widest flex items-center gap-2"
         >
           <FaPlus /> UPLOAD IMAGE
-        </button>
-      </div>
+        </button>{" "}
+      </div>{" "}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        {" "}
         {galleryItems.map((item) => (
           <div
             key={item.id}
             className={`border overflow-hidden shadow-sm ${darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"}`}
           >
-            <img src={item.image} alt="" className="h-40 w-full object-cover" />
+            {" "}
+            <img
+              src={item.image}
+              alt=""
+              className="h-40 w-full object-cover"
+            />{" "}
             <div className="p-4">
+              {" "}
               <p
                 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}
               >
                 {item.title}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">{item.category}</p>
+              </p>{" "}
+              <p className="text-xs text-gray-500 mt-1">{item.category}</p>{" "}
               <div className="mt-4">
+                {" "}
                 <ActionButtons
                   darkMode={darkMode}
                   onEdit={() => onEdit(item)}
                   onDelete={() => onDelete(item.id.split("-")[0])}
-                />
-              </div>
-            </div>
+                />{" "}
+              </div>{" "}
+            </div>{" "}
           </div>
-        ))}
-      </div>
+        ))}{" "}
+      </div>{" "}
     </div>
   );
 }
-
 function ServicesManagement({
   services,
   darkMode,
@@ -870,34 +888,36 @@ function ServicesManagement({
       darkMode={darkMode}
       onActionClick={onAddClick}
     >
+      {" "}
       {services.map((service) => (
         <tr
           key={service._id}
           className={`border-t ${darkMode ? "border-white/10" : "border-black/10"}`}
         >
+          {" "}
           <td
             className={`px-5 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
             {service.title}
-          </td>
+          </td>{" "}
           <td
             className={`px-5 py-4 text-xs max-w-sm truncate ${darkMode ? "text-gray-400" : "text-gray-600"}`}
           >
             {service.description}
-          </td>
+          </td>{" "}
           <td className="px-5 py-4">
+            {" "}
             <ActionButtons
               darkMode={darkMode}
               onEdit={() => onEdit(service)}
               onDelete={() => onDelete(service._id)}
-            />
-          </td>
+            />{" "}
+          </td>{" "}
         </tr>
-      ))}
+      ))}{" "}
     </DataTable>
   );
 }
-
 function MessagesManagement({ messages, onDelete, loading, darkMode }) {
   if (loading)
     return (
@@ -909,6 +929,7 @@ function MessagesManagement({ messages, onDelete, loading, darkMode }) {
       columns={["Sender & Message", "Date", "Actions"]}
       darkMode={darkMode}
     >
+      {" "}
       {messages.length === 0 ? (
         <tr>
           <td colSpan="3" className="px-5 py-8 text-center text-gray-500">
@@ -921,39 +942,41 @@ function MessagesManagement({ messages, onDelete, loading, darkMode }) {
             key={message._id}
             className={`border-t ${darkMode ? "border-white/10" : "border-black/10"}`}
           >
+            {" "}
             <td className="px-5 py-4">
+              {" "}
               <p
                 className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
               >
                 {message.name}
-              </p>
+              </p>{" "}
               <p className="text-xs text-gray-400">
                 {message.email} | {message.phone}
-              </p>
+              </p>{" "}
               <p
                 className={`text-xs p-2 mt-2 border-l-2 border-primary ${darkMode ? "bg-white/5 text-gray-300" : "bg-black/5 text-gray-700"}`}
               >
                 {message.message}
-              </p>
-            </td>
+              </p>{" "}
+            </td>{" "}
             <td className="px-5 py-4 text-xs text-gray-500">
               {new Date(message.createdAt).toLocaleDateString()}
-            </td>
+            </td>{" "}
             <td className="px-5 py-4">
+              {" "}
               <button
                 onClick={() => onDelete(message._id)}
                 className="p-2.5 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all"
               >
                 <FaRegTrashAlt size={14} />
-              </button>
-            </td>
+              </button>{" "}
+            </td>{" "}
           </tr>
         ))
-      )}
+      )}{" "}
     </DataTable>
   );
 }
-
 function SettingsPanel({ darkMode }) {
   return (
     <div
@@ -966,16 +989,16 @@ function SettingsPanel({ darkMode }) {
       </h2>
       <div className="space-y-4">
         <label className="block text-xs uppercase text-gray-400">
-          Studio Name{" "}
+          Studio Name
           <input
             defaultValue="Arcforma Studio"
             className={`w-full mt-1 p-2.5 text-sm border ${darkMode ? "bg-black/30 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
           />
         </label>
         <label className="block text-xs uppercase text-gray-400">
-          Contact Email{" "}
+          Contact Email
           <input
-            defaultValue="arcforma@gmail.com"
+            defaultValue="contact@arcforma.com"
             className={`w-full mt-1 p-2.5 text-sm border ${darkMode ? "bg-black/30 border-white/10 text-white" : "bg-gray-50 border-black/10 text-gray-900"}`}
           />
         </label>
@@ -983,7 +1006,6 @@ function SettingsPanel({ darkMode }) {
     </div>
   );
 }
-
 function DataTable({
   title,
   columns,
@@ -996,14 +1018,16 @@ function DataTable({
     <div
       className={`border shadow-xl overflow-hidden ${darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"}`}
     >
+      {" "}
       <div
         className={`flex justify-between items-center px-5 py-4 border-b ${darkMode ? "border-white/10" : "border-black/10"}`}
       >
+        {" "}
         <h2
           className={`text-base font-bold ${darkMode ? "text-white" : "text-gray-900"}`}
         >
           {title}
-        </h2>
+        </h2>{" "}
         {actionLabel && (
           <button
             onClick={onActionClick}
@@ -1011,45 +1035,70 @@ function DataTable({
           >
             <FaPlus /> {actionLabel}
           </button>
-        )}
-      </div>
+        )}{" "}
+      </div>{" "}
       <div className="overflow-x-auto">
+        {" "}
         <table className="w-full text-left text-sm min-w-[600px]">
+          {" "}
           <thead
             className={`text-[10px] uppercase tracking-wider ${darkMode ? "bg-black/40 text-gray-400" : "bg-gray-100 text-gray-600"}`}
           >
+            {" "}
             <tr>
+              {" "}
               {columns.map((col) => (
                 <th key={col} className="px-5 py-3">
                   {col}
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>{children}</tbody>
-        </table>
-      </div>
+              ))}{" "}
+            </tr>{" "}
+          </thead>{" "}
+          <tbody>{children}</tbody>{" "}
+        </table>{" "}
+      </div>{" "}
     </div>
   );
 }
-
 function ActionButtons({ darkMode, onEdit, onDelete }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
+      {" "}
       <button
         onClick={onEdit}
-        className={`p-2 border transition-all ${darkMode ? "border-white/10 text-gray-300 hover:border-primary hover:text-primary" : "border-black/10 text-gray-700 hover:border-primary hover:text-primary"}`}
-        title="Edit"
+        className={`px-3 py-1 text-xs border ${darkMode ? "border-white/10 text-white hover:bg-white/10" : "border-black/10 text-gray-900 hover:bg-black/5"} transition-colors`}
       >
-        <FaEdit size={13} />
-      </button>
+        Edit
+      </button>{" "}
       <button
         onClick={onDelete}
-        className={`p-2 border transition-all ${darkMode ? "border-white/10 text-gray-300 hover:border-red-400 hover:text-red-400" : "border-black/10 text-gray-700 hover:border-red-500 hover:text-red-500"}`}
-        title="Delete"
+        className="px-3 py-1 text-xs border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
       >
-        <FaRegTrashAlt size={13} />
-      </button>
+        Delete
+      </button>{" "}
+    </div>
+  );
+}
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
+        <p className="text-gray-900">{message}</p>
+        <div className="mt-4 flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm border border-red-500 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
