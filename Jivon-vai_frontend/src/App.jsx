@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
-  Routes,
   Route,
+  Routes,
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -18,7 +18,6 @@ import RunningProject from "./pages/RunningProject";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
-// Scroll to top helper on route transitions
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -47,13 +46,12 @@ function AppLayout() {
       className={
         isAdminRoute
           ? "min-h-screen bg-[#070707] text-gray-100"
-          : "site-shell flex flex-col min-h-screen text-gray-200"
+          : "site-shell flex min-h-screen flex-col text-gray-200"
       }
     >
       {!isAdminRoute && <Navbar />}
       <main className={isAdminRoute ? "min-h-screen" : "flex-grow"}>
         <Routes>
-          {/* পাবলিক ইউজার রাউটস */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
@@ -62,11 +60,7 @@ function AppLayout() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/running-project" element={<RunningProject />} />
-
-          {/* অ্যাডমিন লগইন রাউট */}
           <Route path="/admin" element={<AdminLogin />} />
-
-          {/* 🎯 অ্যাডমিন ড্যাশবোর্ড ডাইনামিক রাউট (প্যারামিটারসহ ফিক্সড করা হলো) */}
           <Route path="/admin/:section" element={<AdminDashboard />} />
         </Routes>
       </main>
