@@ -1,8 +1,11 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 import Admin from "../models/Admin.js";
 
 const TOKEN_FALLBACK_EXPIRES_IN = "1d";
+const RESET_TOKEN_EXPIRES_MS = 15 * 60 * 1000; // 15 minutes
 
 function createToken(adminId, rememberMe = false) {
   if (!process.env.JWT_SECRET) {
@@ -61,6 +64,42 @@ function validateLoginInput({ email, password }) {
   return null;
 }
 
+function validateResetPasswordInput({ password }) {
+  if (!password) {
+    return "Password is required.";
+  }
+
+  if (password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+
+  return null;
+}
+
+async function sendResetEmail(admin, resetUrl) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    return false;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const message = {
+    from: process.env.EMAIL_USER,
+    to: admin.email,
+    subject: "Arcforma Studio password reset request",
+    text: `Hello ${admin.name},\n\nWe received a request to reset your Arcforma Studio admin password. Use the link below to reset it:\n\n${resetUrl}\n\nIf you did not request this, please ignore this message.\n\nThanks,\nArcforma Studio Team`,
+  };
+
+  await transporter.sendMail(message);
+  return true;
+}
+
 export async function registerAdmin(req, res, next) {
   try {
     const validationError = validateRegisterInput(req.body);
@@ -77,7 +116,7 @@ export async function registerAdmin(req, res, next) {
     }
 
     const { name, email, password, rememberMe = true } = req.body;
-    const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+    const existingAdmin = await Admin.findOne({ email: email.toLowerCase().trim() });
 
     if (existingAdmin) {
       return res.status(409).json({
@@ -144,11 +183,15 @@ export async function loginAdmin(req, res, next) {
   }
 }
 
-export async function getCurrentAdmin(req, res) {
-  return res.json({
-    success: true,
-    admin: sanitizeAdmin(req.admin),
-  });
+export async function getCurrentAdmin(req, res, next) {
+  try {
+    return res.json({
+      success: true,
+      admin: sanitizeAdmin(req.admin),
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 export async function logoutAdmin(req, res) {
@@ -156,6 +199,18 @@ export async function logoutAdmin(req, res) {
     success: true,
     message: "Logout successful.",
   });
+}
+
+export async function deleteCurrentAdmin(req, res, next) {
+  try {
+    await Admin.findByIdAndDelete(req.admin._id);
+    return res.json({
+      success: true,
+      message: "Admin account deleted successfully.",
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 export async function checkAdminExists(req, res, next) {
@@ -171,3 +226,84 @@ export async function checkAdminExists(req, res, next) {
     return next(error);
   }
 }
+
+export async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ success: false, message: "Please provide a valid email address." });
+    }
+
+    const admin = await Admin.findOne({ email: email.toLowerCase().trim() });
+    if (!admin) {
+      return res.json({
+        success: true,
+        message: "If the email is registered, password reset instructions will be sent.",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    admin.resetPasswordToken = resetTokenHash;
+    admin.resetPasswordExpires = Date.now() + RESET_TOKEN_EXPIRES_MS;
+    await admin.save({ validateBeforeSave: false });
+
+    const resetUrl = `${req.protocol}://${req.get("host")}/admin/reset-password/${resetToken}`;
+    const emailSent = await sendResetEmail(admin, resetUrl).catch(() => false);
+
+    return res.json({
+      success: true,
+      message: emailSent
+        ? "Password reset instructions were sent to your email."
+        : "Password reset link created. Use the link provided to reset your password.",
+      resetUrl: emailSent ? undefined : resetUrl,
+      emailSent,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function resetPassword(req, res, next) {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Reset token is required." });
+    }
+
+    const validationError = validateResetPasswordInput({ password });
+    if (validationError) {
+      return res.status(400).json({ success: false, message: validationError });
+    }
+
+    const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const admin = await Admin.findOne({
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpires: { $gt: Date.now() },
+    }).select("+password");
+
+    if (!admin) {
+      return res.status(400).json({ success: false, message: "Invalid or expired reset token." });
+    }
+
+    admin.password = await bcrypt.hash(password, 12);
+    admin.resetPasswordToken = undefined;
+    admin.resetPasswordExpires = undefined;
+    await admin.save();
+
+    const newToken = createToken(admin._id, false);
+
+    return res.json({
+      success: true,
+      message: "Password reset successfully.",
+      token: newToken,
+      admin: sanitizeAdmin(admin),
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+

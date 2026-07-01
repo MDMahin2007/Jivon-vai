@@ -31,10 +31,20 @@ const adminSchema = new mongoose.Schema(
       enum: ["admin"],
       default: "admin",
     },
+
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );
 
-adminSchema.index({ email: 1 }, { unique: true });
+adminSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
 export default mongoose.model("Admin", adminSchema);

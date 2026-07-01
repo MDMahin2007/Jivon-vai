@@ -20,6 +20,7 @@ import {
   FaTimes,
   FaTools,
 } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -33,7 +34,13 @@ const navItems = [
   { id: "settings", label: "Settings", icon: FaCog },
 ];
 
-const projectCategories = ["Residential", "Commercial", "Interior", "Exterior", "Planning"];
+const projectCategories = [
+  "Residential",
+  "Commercial",
+  "Interior",
+  "Exterior",
+  "Planning",
+];
 
 const emptyProjectForm = {
   title: "",
@@ -43,6 +50,9 @@ const emptyProjectForm = {
   location: "",
   year: "",
   scale: "",
+  area: "",
+  projectType: "",
+  status: "Published",
   featured: false,
 };
 
@@ -50,10 +60,6 @@ const emptyServiceForm = {
   title: "",
   description: "",
 };
-
-function getToken() {
-  return localStorage.getItem("arcforma_admin_token");
-}
 
 async function parseResponse(response) {
   const data = await response.json().catch(() => ({}));
@@ -66,13 +72,17 @@ async function parseResponse(response) {
 }
 
 function authHeaders(extra = {}) {
-  const token = getToken();
+  const stored =
+    JSON.parse(localStorage.getItem("arcforma_admin_auth") || "null") ||
+    JSON.parse(sessionStorage.getItem("arcforma_admin_auth") || "null");
+  const token = stored?.token;
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
 }
 
 export default function AdminDashboard() {
   const { section = "dashboard" } = useParams();
   const navigate = useNavigate();
+  const { admin, token, signOut, initialized } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [query, setQuery] = useState("");
@@ -90,25 +100,47 @@ export default function AdminDashboard() {
 
   const galleryItems = useMemo(
     () =>
-      projects.flatMap((project) =>
-        (project.images || []).map((image, index) => ({
+      projects.flatMap((project) => {
+        const media = [
+          ...(project.images || []),
+          ...(project.renderImages || []),
+          ...(project.floorPlans || []),
+        ];
+
+        return media.map((image, index) => ({
           id: `${project._id}-${index}`,
           projectId: project._id,
           title: `${project.title} - View ${index + 1}`,
           category: project.category,
           image,
           project,
-        })),
-      ),
+        }));
+      }),
     [projects],
   );
 
   const stats = useMemo(
     () => [
-      { label: "Projects", value: projects.length, detail: `${projects.filter((item) => item.featured).length} featured` },
-      { label: "Gallery Assets", value: galleryItems.length, detail: "Project image library" },
-      { label: "Services", value: services.length, detail: "Live service cards" },
-      { label: "Messages", value: messages.length, detail: `${messages.length ? "Needs review" : "Inbox clear"}` },
+      {
+        label: "Projects",
+        value: projects.length,
+        detail: `${projects.filter((item) => item.featured).length} featured`,
+      },
+      {
+        label: "Gallery Assets",
+        value: galleryItems.length,
+        detail: "Project image library",
+      },
+      {
+        label: "Services",
+        value: services.length,
+        detail: "Live service cards",
+      },
+      {
+        label: "Messages",
+        value: messages.length,
+        detail: `${messages.length ? "Needs review" : "Inbox clear"}`,
+      },
     ],
     [galleryItems.length, messages.length, projects, services.length],
   );
@@ -128,7 +160,9 @@ export default function AdminDashboard() {
     if (!term) return services;
     return services.filter((item) =>
       [item.title, item.description].some((value) =>
-        String(value || "").toLowerCase().includes(term),
+        String(value || "")
+          .toLowerCase()
+          .includes(term),
       ),
     );
   }, [services, query]);
@@ -148,7 +182,9 @@ export default function AdminDashboard() {
     if (!term) return galleryItems;
     return galleryItems.filter((item) =>
       [item.title, item.category].some((value) =>
-        String(value || "").toLowerCase().includes(term),
+        String(value || "")
+          .toLowerCase()
+          .includes(term),
       ),
     );
   }, [galleryItems, query]);
@@ -158,11 +194,18 @@ export default function AdminDashboard() {
     setError("");
 
     try {
-      const [projectPayload, servicePayload, messagePayload] = await Promise.all([
-        fetch(`${API_BASE_URL}/projects`, { headers: authHeaders() }).then(parseResponse),
-        fetch(`${API_BASE_URL}/services`, { headers: authHeaders() }).then(parseResponse),
-        fetch(`${API_BASE_URL}/contact/contacts`, { headers: authHeaders() }).then(parseResponse),
-      ]);
+      const [projectPayload, servicePayload, messagePayload] =
+        await Promise.all([
+          fetch(`${API_BASE_URL}/projects`, { headers: authHeaders() }).then(
+            parseResponse,
+          ),
+          fetch(`${API_BASE_URL}/services`, { headers: authHeaders() }).then(
+            parseResponse,
+          ),
+          fetch(`${API_BASE_URL}/contact/contacts`, {
+            headers: authHeaders(),
+          }).then(parseResponse),
+        ]);
 
       setProjects(projectPayload.data || []);
       setServices(servicePayload.data || []);
@@ -184,11 +227,15 @@ export default function AdminDashboard() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  if (!initialized) {
+    return null;
+  }
+
   if (!activeItem) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  if (!getToken()) {
+  if (!token) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -208,11 +255,17 @@ export default function AdminDashboard() {
             location: project.location || "",
             year: project.year || "",
             scale: project.scale || "",
+            area: project.area || "",
+            projectType: project.projectType || "",
+            status: project.status || "Published",
             featured: Boolean(project.featured),
           }
         : emptyProjectForm,
       coverFile: null,
       galleryFiles: [],
+      renderFiles: [],
+      floorPlanFiles: [],
+      videoFiles: [],
       videoFile: null,
     });
   };
@@ -258,24 +311,33 @@ export default function AdminDashboard() {
 
     if (modal.coverFile) payload.append("coverImage", modal.coverFile);
     modal.galleryFiles.forEach((file) => payload.append("images", file));
+    modal.renderFiles.forEach((file) => payload.append("renderImages", file));
+    modal.floorPlanFiles.forEach((file) => payload.append("floorPlans", file));
+    modal.videoFiles.forEach((file) => payload.append("videos", file));
     if (modal.videoFile) payload.append("videoFile", modal.videoFile);
 
     const id = modal.item?._id;
-    const response = await fetch(`${API_BASE_URL}/projects${id ? `/${id}` : ""}`, {
-      method: id ? "PUT" : "POST",
-      headers: authHeaders(),
-      body: payload,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/projects${id ? `/${id}` : ""}`,
+      {
+        method: id ? "PUT" : "POST",
+        headers: authHeaders(),
+        body: payload,
+      },
+    );
     await parseResponse(response);
   };
 
   const saveService = async () => {
     const id = modal.item?._id;
-    const response = await fetch(`${API_BASE_URL}/services${id ? `/${id}` : ""}`, {
-      method: id ? "PUT" : "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(modal.data),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/services${id ? `/${id}` : ""}`,
+      {
+        method: id ? "PUT" : "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(modal.data),
+      },
+    );
     await parseResponse(response);
   };
 
@@ -337,9 +399,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("arcforma_admin_token");
-    localStorage.removeItem("arcforma_admin_user");
+  const handleLogout = async () => {
+    await signOut();
     navigate("/admin");
   };
 
@@ -447,7 +508,9 @@ export default function AdminDashboard() {
         <div className="min-w-0 flex-1">
           <header
             className={`sticky top-0 z-30 border-b backdrop-blur-xl ${
-              darkMode ? "border-white/10 bg-black/55" : "border-black/10 bg-white/75"
+              darkMode
+                ? "border-white/10 bg-black/55"
+                : "border-black/10 bg-white/75"
             }`}
           >
             <div className="flex flex-col gap-4 px-5 py-4 sm:px-8 xl:flex-row xl:items-center xl:justify-between">
@@ -455,7 +518,9 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   className={`flex h-10 w-10 items-center justify-center border lg:hidden ${
-                    darkMode ? "border-white/10 text-white" : "border-black/10 text-gray-950"
+                    darkMode
+                      ? "border-white/10 text-white"
+                      : "border-black/10 text-gray-950"
                   }`}
                   onClick={() => setSidebarOpen(true)}
                   aria-label="Open sidebar"
@@ -479,7 +544,9 @@ export default function AdminDashboard() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <label
                   className={`flex h-11 min-w-[240px] items-center gap-3 border px-4 ${
-                    darkMode ? "border-white/10 bg-white/5" : "border-black/10 bg-white"
+                    darkMode
+                      ? "border-white/10 bg-white/5"
+                      : "border-black/10 bg-white"
                   }`}
                 >
                   <FaSearch className="text-gray-500" size={13} />
@@ -488,7 +555,9 @@ export default function AdminDashboard() {
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search admin data..."
                     className={`w-full bg-transparent text-sm outline-none ${
-                      darkMode ? "text-white placeholder:text-gray-600" : "text-gray-950 placeholder:text-gray-500"
+                      darkMode
+                        ? "text-white placeholder:text-gray-600"
+                        : "text-gray-950 placeholder:text-gray-500"
                     }`}
                   />
                 </label>
@@ -546,7 +615,9 @@ export default function AdminDashboard() {
                     onAdd={() => openProjectModal()}
                     onEdit={openProjectModal}
                     onDelete={(project) =>
-                      requestDelete(project.title, () => handleDelete("projects", project._id))
+                      requestDelete(project.title, () =>
+                        handleDelete("projects", project._id),
+                      )
                     }
                   />
                 )}
@@ -557,7 +628,9 @@ export default function AdminDashboard() {
                     onAdd={() => openProjectModal()}
                     onEdit={(item) => openProjectModal(item.project)}
                     onDelete={(item) =>
-                      requestDelete(item.title, () => handleDelete("projects", item.projectId))
+                      requestDelete(item.title, () =>
+                        handleDelete("projects", item.projectId),
+                      )
                     }
                   />
                 )}
@@ -568,7 +641,9 @@ export default function AdminDashboard() {
                     onAdd={() => openServiceModal()}
                     onEdit={openServiceModal}
                     onDelete={(service) =>
-                      requestDelete(service.title, () => handleDelete("services", service._id))
+                      requestDelete(service.title, () =>
+                        handleDelete("services", service._id),
+                      )
                     }
                   />
                 )}
@@ -577,11 +652,15 @@ export default function AdminDashboard() {
                     messages={filteredMessages}
                     darkMode={darkMode}
                     onDelete={(message) =>
-                      requestDelete(message.name, () => handleDeleteMessage(message._id))
+                      requestDelete(message.name, () =>
+                        handleDeleteMessage(message._id),
+                      )
                     }
                   />
                 )}
-                {section === "settings" && <SettingsPanel darkMode={darkMode} />}
+                {section === "settings" && (
+                  <SettingsPanel darkMode={darkMode} />
+                )}
               </>
             )}
           </main>
@@ -614,7 +693,14 @@ export default function AdminDashboard() {
   );
 }
 
-function DashboardHome({ stats, projects, messages, darkMode, onAddProject, onAddService }) {
+function DashboardHome({
+  stats,
+  projects,
+  messages,
+  darkMode,
+  onAddProject,
+  onAddService,
+}) {
   return (
     <div className="space-y-8">
       <StatsGrid stats={stats} darkMode={darkMode} />
@@ -630,7 +716,10 @@ function DashboardHome({ stats, projects, messages, darkMode, onAddProject, onAd
           >
             <div className="overflow-x-auto">
               <table className="w-full min-w-[680px] text-left text-sm">
-                <TableHead columns={["Project", "Category", "Meta", "Status"]} darkMode={darkMode} />
+                <TableHead
+                  columns={["Project", "Category", "Meta", "Status"]}
+                  darkMode={darkMode}
+                />
                 <tbody>
                   {projects.slice(0, 6).map((project) => (
                     <tr key={project._id} className={rowClass(darkMode)}>
@@ -642,15 +731,25 @@ function DashboardHome({ stats, projects, messages, darkMode, onAddProject, onAd
                             className="h-12 w-16 border border-white/10 object-cover"
                           />
                           <div>
-                            <p className={textClass(darkMode, "font-medium")}>{project.title}</p>
-                            <p className="mt-1 text-xs text-gray-500">{project.location || "No location"}</p>
+                            <p className={textClass(darkMode, "font-medium")}>
+                              {project.title}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              {project.location || "No location"}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td className={cellMutedClass(darkMode)}>{project.category}</td>
-                      <td className={cellMutedClass(darkMode)}>{project.year || "Draft meta"}</td>
+                      <td className={cellMutedClass(darkMode)}>
+                        {project.category}
+                      </td>
+                      <td className={cellMutedClass(darkMode)}>
+                        {project.year || "Draft meta"}
+                      </td>
                       <td className="px-5 py-4">
-                        <StatusBadge label={project.featured ? "Featured" : "Published"} />
+                        <StatusBadge
+                          label={project.featured ? "Featured" : "Published"}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -666,9 +765,20 @@ function DashboardHome({ stats, projects, messages, darkMode, onAddProject, onAd
           darkMode={darkMode}
         >
           <div className="space-y-3">
-            <QuickAction label="Create project" detail="Upload cover, gallery and metadata" onClick={onAddProject} />
-            <QuickAction label="Create service" detail="Add a new service card" onClick={onAddService} />
-            <QuickAction label="Review inbox" detail={`${messages.length} messages visible`} />
+            <QuickAction
+              label="Create project"
+              detail="Upload cover, gallery and metadata"
+              onClick={onAddProject}
+            />
+            <QuickAction
+              label="Create service"
+              detail="Add a new service card"
+              onClick={onAddService}
+            />
+            <QuickAction
+              label="Review inbox"
+              detail={`${messages.length} messages visible`}
+            />
           </div>
         </Panel>
       </div>
@@ -687,7 +797,10 @@ function ProjectsManagement({ projects, darkMode, onAdd, onEdit, onDelete }) {
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-left text-sm">
-          <TableHead columns={["Project", "Category", "Client", "Year", "Actions"]} darkMode={darkMode} />
+          <TableHead
+            columns={["Project", "Category", "Client", "Year", "Actions"]}
+            darkMode={darkMode}
+          />
           <tbody>
             {projects.map((project) => (
               <tr key={project._id} className={rowClass(darkMode)}>
@@ -699,7 +812,9 @@ function ProjectsManagement({ projects, darkMode, onAdd, onEdit, onDelete }) {
                       className="h-12 w-16 border border-white/10 object-cover"
                     />
                     <div>
-                      <p className={textClass(darkMode, "font-medium")}>{project.title}</p>
+                      <p className={textClass(darkMode, "font-medium")}>
+                        {project.title}
+                      </p>
                       <p className="mt-1 max-w-[300px] truncate text-xs text-gray-500">
                         {project.description || "No description"}
                       </p>
@@ -707,19 +822,27 @@ function ProjectsManagement({ projects, darkMode, onAdd, onEdit, onDelete }) {
                   </div>
                 </td>
                 <td className={cellMutedClass(darkMode)}>{project.category}</td>
-                <td className={cellMutedClass(darkMode)}>{project.client || "Not set"}</td>
-                <td className={cellMutedClass(darkMode)}>{project.year || "Not set"}</td>
+                <td className={cellMutedClass(darkMode)}>
+                  {project.client || "Not set"}
+                </td>
+                <td className={cellMutedClass(darkMode)}>
+                  {project.year || "Not set"}
+                </td>
                 <td className="px-5 py-4">
                   <ActionButtons
                     darkMode={darkMode}
-                    onView={() => window.open(`/project/${project._id}`, "_blank")}
+                    onView={() =>
+                      window.open(`/project/${project._id}`, "_blank")
+                    }
                     onEdit={() => onEdit(project)}
                     onDelete={() => onDelete(project)}
                   />
                 </td>
               </tr>
             ))}
-            {!projects.length && <EmptyTableRow colSpan={5} label="No projects found." />}
+            {!projects.length && (
+              <EmptyTableRow colSpan={5} label="No projects found." />
+            )}
           </tbody>
         </table>
       </div>
@@ -727,7 +850,13 @@ function ProjectsManagement({ projects, darkMode, onAdd, onEdit, onDelete }) {
   );
 }
 
-function GalleryManagement({ galleryItems, darkMode, onAdd, onEdit, onDelete }) {
+function GalleryManagement({
+  galleryItems,
+  darkMode,
+  onAdd,
+  onEdit,
+  onDelete,
+}) {
   return (
     <Panel
       title="Gallery Management"
@@ -742,12 +871,20 @@ function GalleryManagement({ galleryItems, darkMode, onAdd, onEdit, onDelete }) 
             <div
               key={item.id}
               className={`overflow-hidden border ${
-                darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"
+                darkMode
+                  ? "border-white/10 bg-white/[0.04]"
+                  : "border-black/10 bg-white"
               }`}
             >
-              <img src={item.image} alt={item.title} className="h-44 w-full object-cover" />
+              <img
+                src={item.image}
+                alt={item.title}
+                className="h-44 w-full object-cover"
+              />
               <div className="p-4">
-                <p className={textClass(darkMode, "truncate font-medium")}>{item.title}</p>
+                <p className={textClass(darkMode, "truncate font-medium")}>
+                  {item.title}
+                </p>
                 <p className="mt-1 text-xs text-gray-500">{item.category}</p>
                 <div className="mt-4">
                   <ActionButtons
@@ -779,7 +916,10 @@ function ServicesManagement({ services, darkMode, onAdd, onEdit, onDelete }) {
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-left text-sm">
-          <TableHead columns={["Service", "Description", "Status", "Actions"]} darkMode={darkMode} />
+          <TableHead
+            columns={["Service", "Description", "Status", "Actions"]}
+            darkMode={darkMode}
+          />
           <tbody>
             {services.map((service) => (
               <tr key={service._id} className={rowClass(darkMode)}>
@@ -787,7 +927,9 @@ function ServicesManagement({ services, darkMode, onAdd, onEdit, onDelete }) {
                 <td className={`${cellMutedClass(darkMode)} max-w-xl`}>
                   <span className="line-clamp-2">{service.description}</span>
                 </td>
-                <td className="px-5 py-4"><StatusBadge label="Active" /></td>
+                <td className="px-5 py-4">
+                  <StatusBadge label="Active" />
+                </td>
                 <td className="px-5 py-4">
                   <ActionButtons
                     darkMode={darkMode}
@@ -797,7 +939,9 @@ function ServicesManagement({ services, darkMode, onAdd, onEdit, onDelete }) {
                 </td>
               </tr>
             ))}
-            {!services.length && <EmptyTableRow colSpan={4} label="No services found." />}
+            {!services.length && (
+              <EmptyTableRow colSpan={4} label="No services found." />
+            )}
           </tbody>
         </table>
       </div>
@@ -814,20 +958,29 @@ function MessagesManagement({ messages, darkMode, onDelete }) {
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[780px] text-left text-sm">
-          <TableHead columns={["Sender", "Interest", "Message", "Date", "Action"]} darkMode={darkMode} />
+          <TableHead
+            columns={["Sender", "Interest", "Message", "Date", "Action"]}
+            darkMode={darkMode}
+          />
           <tbody>
             {messages.map((message) => (
               <tr key={message._id} className={rowClass(darkMode)}>
                 <td className="px-5 py-4">
-                  <p className={textClass(darkMode, "font-medium")}>{message.name}</p>
+                  <p className={textClass(darkMode, "font-medium")}>
+                    {message.name}
+                  </p>
                   <p className="mt-1 text-xs text-gray-500">{message.email}</p>
                   <p className="mt-1 text-xs text-gray-500">{message.phone}</p>
                 </td>
-                <td className={cellMutedClass(darkMode)}>{message.interest || "General"}</td>
+                <td className={cellMutedClass(darkMode)}>
+                  {message.interest || "General"}
+                </td>
                 <td className={`${cellMutedClass(darkMode)} max-w-md`}>
                   <span className="line-clamp-2">{message.message}</span>
                 </td>
-                <td className={cellMutedClass(darkMode)}>{formatDate(message.createdAt)}</td>
+                <td className={cellMutedClass(darkMode)}>
+                  {formatDate(message.createdAt)}
+                </td>
                 <td className="px-5 py-4">
                   <button
                     type="button"
@@ -840,7 +993,9 @@ function MessagesManagement({ messages, darkMode, onDelete }) {
                 </td>
               </tr>
             ))}
-            {!messages.length && <EmptyTableRow colSpan={5} label="No messages found." />}
+            {!messages.length && (
+              <EmptyTableRow colSpan={5} label="No messages found." />
+            )}
           </tbody>
         </table>
       </div>
@@ -849,27 +1004,113 @@ function MessagesManagement({ messages, darkMode, onDelete }) {
 }
 
 function SettingsPanel({ darkMode }) {
+  const { token, signOut } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState("");
+
+  const handleDeleteAccount = async () => {
+    if (
+      !window.confirm(
+        "This will permanently remove the current admin account. Continue?",
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteMessage("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to delete the admin account.");
+      }
+      await signOut();
+      window.location.assign("/admin");
+    } catch (error) {
+      setDeleteMessage(error.message || "Unable to delete the admin account.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <Panel title="Website Identity" subtitle="Basic studio configuration" darkMode={darkMode}>
+      <Panel
+        title="Website Identity"
+        subtitle="Basic studio configuration"
+        darkMode={darkMode}
+      >
         <div className="space-y-4">
-          <ReadOnlyInput label="Studio Name" value="Arcforma Studio" darkMode={darkMode} />
-          <ReadOnlyInput label="API Base URL" value={API_BASE_URL} darkMode={darkMode} />
-          <ReadOnlyInput label="Admin Session" value={getToken() ? "Logged in" : "Local session"} darkMode={darkMode} />
+          <ReadOnlyInput
+            label="Studio Name"
+            value="Arcforma Studio"
+            darkMode={darkMode}
+          />
+          <ReadOnlyInput
+            label="API Base URL"
+            value={API_BASE_URL}
+            darkMode={darkMode}
+          />
+          <ReadOnlyInput
+            label="Admin Session"
+            value={token ? "Logged in" : "Local session"}
+            darkMode={darkMode}
+          />
         </div>
       </Panel>
 
-      <Panel title="Publishing Preferences" subtitle="Frontend management controls" darkMode={darkMode}>
+      <Panel
+        title="Account Management"
+        subtitle="Replace the current administrator safely"
+        darkMode={darkMode}
+      >
         <div className="space-y-3">
-          {["Show featured projects", "Enable message notifications", "Use dark admin theme"].map((label) => (
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="w-full border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm font-medium text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {deleting ? "Deleting account..." : "Delete current admin account"}
+          </button>
+          {deleteMessage && (
+            <p className="text-sm text-red-400">{deleteMessage}</p>
+          )}
+        </div>
+      </Panel>
+
+      <Panel
+        title="Publishing Preferences"
+        subtitle="Frontend management controls"
+        darkMode={darkMode}
+      >
+        <div className="space-y-3">
+          {[
+            "Show featured projects",
+            "Enable message notifications",
+            "Use dark admin theme",
+          ].map((label) => (
             <label
               key={label}
               className={`flex items-center justify-between border px-4 py-3 text-sm ${
-                darkMode ? "border-white/10 bg-black/25 text-gray-300" : "border-black/10 bg-white text-gray-700"
+                darkMode
+                  ? "border-white/10 bg-black/25 text-gray-300"
+                  : "border-black/10 bg-white text-gray-700"
               }`}
             >
               {label}
-              <input type="checkbox" defaultChecked className="h-4 w-4 accent-primary" />
+              <input
+                type="checkbox"
+                defaultChecked
+                className="h-4 w-4 accent-primary"
+              />
             </label>
           ))}
         </div>
@@ -878,14 +1119,24 @@ function SettingsPanel({ darkMode }) {
   );
 }
 
-function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange, onFilesChange }) {
+function EditorModal({
+  modal,
+  darkMode,
+  saving,
+  onClose,
+  onSubmit,
+  onDataChange,
+  onFilesChange,
+}) {
   const isProject = modal.type === "project";
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm">
       <div
         className={`my-8 w-full max-w-5xl border shadow-2xl ${
-          darkMode ? "border-white/10 bg-[#090909] text-white" : "border-black/10 bg-white text-gray-950"
+          darkMode
+            ? "border-white/10 bg-[#090909] text-white"
+            : "border-black/10 bg-white text-gray-950"
         }`}
       >
         <div
@@ -925,11 +1176,15 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
                   Category
                   <select
                     value={modal.data.category}
-                    onChange={(event) => onDataChange("category", event.target.value)}
+                    onChange={(event) =>
+                      onDataChange("category", event.target.value)
+                    }
                     className={inputClass(darkMode)}
                   >
                     {projectCategories.map((category) => (
-                      <option key={category} value={category}>{category}</option>
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -946,21 +1201,63 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
               {isProject && (
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FormInput label="Client" value={modal.data.client} onChange={(value) => onDataChange("client", value)} darkMode={darkMode} />
-                    <FormInput label="Location" value={modal.data.location} onChange={(value) => onDataChange("location", value)} darkMode={darkMode} />
-                    <FormInput label="Year" value={modal.data.year} onChange={(value) => onDataChange("year", value)} darkMode={darkMode} />
-                    <FormInput label="Scale" value={modal.data.scale} onChange={(value) => onDataChange("scale", value)} darkMode={darkMode} />
+                    <FormInput
+                      label="Client"
+                      value={modal.data.client}
+                      onChange={(value) => onDataChange("client", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Location"
+                      value={modal.data.location}
+                      onChange={(value) => onDataChange("location", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Year"
+                      value={modal.data.year}
+                      onChange={(value) => onDataChange("year", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Scale"
+                      value={modal.data.scale}
+                      onChange={(value) => onDataChange("scale", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Area"
+                      value={modal.data.area}
+                      onChange={(value) => onDataChange("area", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Project Type"
+                      value={modal.data.projectType}
+                      onChange={(value) => onDataChange("projectType", value)}
+                      darkMode={darkMode}
+                    />
+                    <FormInput
+                      label="Status"
+                      value={modal.data.status}
+                      onChange={(value) => onDataChange("status", value)}
+                      darkMode={darkMode}
+                    />
                   </div>
                   <label
                     className={`flex items-center justify-between border px-4 py-3 text-sm ${
-                      darkMode ? "border-white/10 bg-black/25 text-gray-300" : "border-black/10 bg-gray-50 text-gray-700"
+                      darkMode
+                        ? "border-white/10 bg-black/25 text-gray-300"
+                        : "border-black/10 bg-gray-50 text-gray-700"
                     }`}
                   >
                     Feature this project
                     <input
                       type="checkbox"
                       checked={modal.data.featured}
-                      onChange={(event) => onDataChange("featured", event.target.checked)}
+                      onChange={(event) =>
+                        onDataChange("featured", event.target.checked)
+                      }
                       className="h-4 w-4 accent-primary"
                     />
                   </label>
@@ -971,15 +1268,23 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
             {isProject && (
               <div
                 className={`space-y-5 border p-5 ${
-                  darkMode ? "border-white/10 bg-white/[0.03]" : "border-black/10 bg-gray-50"
+                  darkMode
+                    ? "border-white/10 bg-white/[0.03]"
+                    : "border-black/10 bg-gray-50"
                 }`}
               >
                 <FileInput
                   label="Cover Image"
-                  hint={modal.item ? "Leave empty to keep the current cover." : "Required for new projects."}
+                  hint={
+                    modal.item
+                      ? "Leave empty to keep the current cover."
+                      : "Required for new projects."
+                  }
                   accept="image/*"
                   darkMode={darkMode}
-                  onChange={(files) => onFilesChange("coverFile", files[0] || null)}
+                  onChange={(files) =>
+                    onFilesChange("coverFile", files[0] || null)
+                  }
                 />
 
                 {modal.item?.coverImage && (
@@ -992,7 +1297,7 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
 
                 <FileInput
                   label="Gallery Images"
-                  hint={`${modal.galleryFiles.length} selected. Uploading new gallery images replaces the gallery on update.`}
+                  hint={`${modal.galleryFiles.length} selected. New uploads replace the gallery on update.`}
                   accept="image/*"
                   multiple
                   darkMode={darkMode}
@@ -1000,11 +1305,40 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
                 />
 
                 <FileInput
+                  label="Render Images"
+                  hint={`${modal.renderFiles.length} selected.`}
+                  accept="image/*"
+                  multiple
+                  darkMode={darkMode}
+                  onChange={(files) => onFilesChange("renderFiles", files)}
+                />
+
+                <FileInput
+                  label="Floor Plans"
+                  hint={`${modal.floorPlanFiles.length} selected.`}
+                  accept="image/*"
+                  multiple
+                  darkMode={darkMode}
+                  onChange={(files) => onFilesChange("floorPlanFiles", files)}
+                />
+
+                <FileInput
+                  label="Project Videos"
+                  hint={`${modal.videoFiles.length} selected.`}
+                  accept="video/*"
+                  multiple
+                  darkMode={darkMode}
+                  onChange={(files) => onFilesChange("videoFiles", files)}
+                />
+
+                <FileInput
                   label="Project Video"
-                  hint="Optional video file."
+                  hint="Optional single video file."
                   accept="video/*"
                   darkMode={darkMode}
-                  onChange={(files) => onFilesChange("videoFile", files[0] || null)}
+                  onChange={(files) =>
+                    onFilesChange("videoFile", files[0] || null)
+                  }
                 />
               </div>
             )}
@@ -1015,7 +1349,9 @@ function EditorModal({ modal, darkMode, saving, onClose, onSubmit, onDataChange,
               type="button"
               onClick={onClose}
               className={`px-5 py-3 text-xs font-bold tracking-widest ${
-                darkMode ? "border border-white/10 text-gray-300 hover:text-white" : "border border-black/10 text-gray-700"
+                darkMode
+                  ? "border border-white/10 text-gray-300 hover:text-white"
+                  : "border border-black/10 text-gray-700"
               }`}
             >
               CANCEL
@@ -1041,15 +1377,23 @@ function StatsGrid({ stats, darkMode }) {
         <div
           key={stat.label}
           className={`border p-5 shadow-xl ${
-            darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"
+            darkMode
+              ? "border-white/10 bg-white/[0.04]"
+              : "border-black/10 bg-white"
           }`}
         >
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-gray-500">
             {stat.label}
           </p>
           <div className="mt-4 flex items-end justify-between gap-4">
-            <span className={textClass(darkMode, "font-heading text-3xl font-bold")}>{stat.value}</span>
-            <span className="text-right text-[11px] text-primary">{stat.detail}</span>
+            <span
+              className={textClass(darkMode, "font-heading text-3xl font-bold")}
+            >
+              {stat.value}
+            </span>
+            <span className="text-right text-[11px] text-primary">
+              {stat.detail}
+            </span>
           </div>
         </div>
       ))}
@@ -1061,7 +1405,9 @@ function Panel({ title, subtitle, actionLabel, onAction, darkMode, children }) {
   return (
     <section
       className={`border shadow-xl shadow-black/10 ${
-        darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"
+        darkMode
+          ? "border-white/10 bg-white/[0.04]"
+          : "border-black/10 bg-white"
       }`}
     >
       <div
@@ -1070,7 +1416,9 @@ function Panel({ title, subtitle, actionLabel, onAction, darkMode, children }) {
         }`}
       >
         <div>
-          <h2 className={textClass(darkMode, "font-heading text-lg font-bold")}>{title}</h2>
+          <h2 className={textClass(darkMode, "font-heading text-lg font-bold")}>
+            {title}
+          </h2>
           {subtitle && <p className="mt-1 text-xs text-gray-500">{subtitle}</p>}
         </div>
         {actionLabel && (
@@ -1098,7 +1446,9 @@ function TableHead({ columns, darkMode }) {
     >
       <tr>
         {columns.map((column) => (
-          <th key={column} className="px-5 py-4 font-bold">{column}</th>
+          <th key={column} className="px-5 py-4 font-bold">
+            {column}
+          </th>
         ))}
       </tr>
     </thead>
@@ -1115,11 +1465,21 @@ function ActionButtons({ darkMode, onView, onEdit, onDelete }) {
   return (
     <div className="flex items-center gap-2">
       {onView && (
-        <button type="button" onClick={onView} className={buttonClass} aria-label="View">
+        <button
+          type="button"
+          onClick={onView}
+          className={buttonClass}
+          aria-label="View"
+        >
           <FaEye size={13} />
         </button>
       )}
-      <button type="button" onClick={onEdit} className={buttonClass} aria-label="Edit">
+      <button
+        type="button"
+        onClick={onEdit}
+        className={buttonClass}
+        aria-label="Edit"
+      >
         <FaCog size={13} />
       </button>
       <button
@@ -1155,7 +1515,9 @@ function ConfirmDialog({ label, darkMode, onCancel, onConfirm }) {
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
       <div
         className={`w-full max-w-md border p-6 shadow-2xl ${
-          darkMode ? "border-white/10 bg-[#090909] text-white" : "border-black/10 bg-white text-gray-950"
+          darkMode
+            ? "border-white/10 bg-[#090909] text-white"
+            : "border-black/10 bg-white text-gray-950"
         }`}
       >
         <div className="mb-4 flex items-center gap-3 text-red-400">
@@ -1166,10 +1528,18 @@ function ConfirmDialog({ label, darkMode, onCancel, onConfirm }) {
           This will permanently remove "{label}" from the website database.
         </p>
         <div className="mt-6 flex justify-end gap-3">
-          <button type="button" onClick={onCancel} className="border border-white/10 px-4 py-2 text-sm text-gray-400">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="border border-white/10 px-4 py-2 text-sm text-gray-400"
+          >
             Cancel
           </button>
-          <button type="button" onClick={onConfirm} className="bg-red-500 px-4 py-2 text-sm font-bold text-white">
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="bg-red-500 px-4 py-2 text-sm font-bold text-white"
+          >
             Delete
           </button>
         </div>
@@ -1182,7 +1552,11 @@ function Toast({ toast }) {
   const isSuccess = toast.type === "success";
   return (
     <div className="fixed right-5 top-5 z-[80] flex max-w-sm items-center gap-3 border border-white/10 bg-black/85 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-xl">
-      {isSuccess ? <FaCheckCircle className="text-green-400" /> : <FaExclamationTriangle className="text-red-400" />}
+      {isSuccess ? (
+        <FaCheckCircle className="text-green-400" />
+      ) : (
+        <FaExclamationTriangle className="text-red-400" />
+      )}
       <span>{toast.message}</span>
     </div>
   );
@@ -1192,11 +1566,15 @@ function LoadingState({ darkMode }) {
   return (
     <div
       className={`flex min-h-[360px] flex-col items-center justify-center border ${
-        darkMode ? "border-white/10 bg-white/[0.04]" : "border-black/10 bg-white"
+        darkMode
+          ? "border-white/10 bg-white/[0.04]"
+          : "border-black/10 bg-white"
       }`}
     >
       <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      <p className="mt-4 text-sm text-gray-500">Synchronizing dashboard data...</p>
+      <p className="mt-4 text-sm text-gray-500">
+        Synchronizing dashboard data...
+      </p>
     </div>
   );
 }
@@ -1205,7 +1583,9 @@ function ErrorState({ message, onRetry }) {
   return (
     <div className="flex min-h-[360px] flex-col items-center justify-center border border-red-500/20 bg-red-500/5 p-6 text-center">
       <FaExclamationTriangle className="text-red-400" size={28} />
-      <h2 className="mt-4 font-heading text-xl font-bold text-white">Backend connection failed</h2>
+      <h2 className="mt-4 font-heading text-xl font-bold text-white">
+        Backend connection failed
+      </h2>
       <p className="mt-2 max-w-md text-sm text-gray-400">{message}</p>
       <button
         type="button"
@@ -1230,7 +1610,10 @@ function StatusBadge({ label }) {
 function EmptyTableRow({ colSpan, label }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="px-5 py-10 text-center text-sm text-gray-500">
+      <td
+        colSpan={colSpan}
+        className="px-5 py-10 text-center text-sm text-gray-500"
+      >
         {label}
       </td>
     </tr>
@@ -1238,7 +1621,9 @@ function EmptyTableRow({ colSpan, label }) {
 }
 
 function EmptyState({ label }) {
-  return <div className="px-5 py-16 text-center text-sm text-gray-500">{label}</div>;
+  return (
+    <div className="px-5 py-16 text-center text-sm text-gray-500">{label}</div>
+  );
 }
 
 function ReadOnlyInput({ label, value, darkMode }) {
@@ -1279,7 +1664,14 @@ function FormTextarea({ label, value, onChange, darkMode, required = false }) {
   );
 }
 
-function FileInput({ label, hint, accept, multiple = false, darkMode, onChange }) {
+function FileInput({
+  label,
+  hint,
+  accept,
+  multiple = false,
+  darkMode,
+  onChange,
+}) {
   return (
     <label className="block text-xs uppercase tracking-widest text-gray-500">
       {label}
@@ -1289,10 +1681,16 @@ function FileInput({ label, hint, accept, multiple = false, darkMode, onChange }
         multiple={multiple}
         onChange={(event) => onChange(Array.from(event.target.files || []))}
         className={`mt-2 block w-full border p-3 text-xs ${
-          darkMode ? "border-white/10 bg-black/30 text-gray-400" : "border-black/10 bg-white text-gray-600"
+          darkMode
+            ? "border-white/10 bg-black/30 text-gray-400"
+            : "border-black/10 bg-white text-gray-600"
         }`}
       />
-      {hint && <span className="mt-2 block text-[11px] normal-case tracking-normal text-gray-500">{hint}</span>}
+      {hint && (
+        <span className="mt-2 block text-[11px] normal-case tracking-normal text-gray-500">
+          {hint}
+        </span>
+      )}
     </label>
   );
 }

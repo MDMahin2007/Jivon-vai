@@ -1,10 +1,22 @@
 import express from "express";
 import Project from "../models/project.model.js";
 import uploadCloud from "../config/cloudinaryConfig.js";
+import { protectAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ১. Shob project niye asa
+const normalizeBoolean = (value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+    return false;
+};
+
+const mapUploadedFiles = (files = {}, fieldName) => {
+    const uploaded = files[fieldName];
+    if (!uploaded || !uploaded.length) return [];
+    return uploaded.map((file) => file.path);
+};
+
 router.get("/", async (req, res) => {
     try {
         const projects = await Project.find().sort({ createdAt: -1 });
@@ -14,103 +26,143 @@ router.get("/", async (req, res) => {
     }
 });
 
-// ২. Single Project details niye asa
 router.get("/:id", async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
-        if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
         res.json({ success: true, data: project });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ৩. New project create kora
-router.post("/", uploadCloud.fields([
-    { name: 'coverImage', maxCount: 1 },
-    { name: 'images', maxCount: 15 },
-    { name: 'videoFile', maxCount: 1 }
-]), async (req, res) => {
-    try {
-        const coverImageUrl = req.files && req.files['coverImage'] ? req.files['coverImage'][0].path : '';
-        const galleryUrls = req.files && req.files['images'] ? req.files['images'].map(file => file.path) : [];
-        const videoUrl = req.files && req.files['videoFile'] ? req.files['videoFile'][0].path : '';
+router.post(
+    "/",
+    protectAdmin,
+    uploadCloud.fields([
+        { name: "coverImage", maxCount: 1 },
+        { name: "images", maxCount: 15 },
+        { name: "renderImages", maxCount: 15 },
+        { name: "floorPlans", maxCount: 15 },
+        { name: "videoFile", maxCount: 1 },
+        { name: "videos", maxCount: 10 },
+    ]),
+    async (req, res) => {
+        try {
+            const coverImageUrl = req.files?.coverImage?.[0]?.path || "";
+            if (!coverImageUrl) {
+                return res.status(400).json({ success: false, message: "Cover image is required!" });
+            }
 
-        if (!coverImageUrl) {
-            return res.status(400).json({ success: false, message: "Cover image is required!" });
+            const payload = {
+                title: req.body.title || "",
+                category: req.body.category || "",
+                description: req.body.description || "",
+                featured: normalizeBoolean(req.body.featured),
+                coverImage: coverImageUrl,
+                images: mapUploadedFiles(req.files, "images"),
+                renderImages: mapUploadedFiles(req.files, "renderImages"),
+                floorPlans: mapUploadedFiles(req.files, "floorPlans"),
+                videos: mapUploadedFiles(req.files, "videos"),
+                videoUrl: req.body.videoUrl || req.files?.videoFile?.[0]?.path || "",
+                client: req.body.client || "",
+                location: req.body.location || "",
+                year: req.body.year || "",
+                scale: req.body.scale || "",
+                status: req.body.status || "Published",
+                area: req.body.area || "",
+                projectType: req.body.projectType || "",
+                projectSheet: {
+                    client: req.body.client || "",
+                    location: req.body.location || "",
+                    year: req.body.year || "",
+                    scale: req.body.scale || "",
+                    status: req.body.status || "Published",
+                    area: req.body.area || "",
+                    projectType: req.body.projectType || "",
+                },
+            };
+
+            const ignoredFields = new Set(["title", "category", "description", "featured", "coverImage", "images", "renderImages", "floorPlans", "videos", "videoFile", "videoUrl", "client", "location", "year", "scale", "status", "area", "projectType"]);
+            Object.entries(req.body).forEach(([key, value]) => {
+                if (!ignoredFields.has(key)) {
+                    payload[key] = value;
+                }
+            });
+
+            const newProject = await Project.create(payload);
+            res.json({ success: true, data: newProject });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
         }
+    },
+);
 
-        const newProject = new Project({
-            title: req.body.title,
-            category: req.body.category,
-            description: req.body.description || '',
-            featured: req.body.featured === 'true' || req.body.featured === true,
-            coverImage: coverImageUrl,
-            images: galleryUrls,
-            videoUrl: videoUrl || req.body.videoUrl || '',
-            client: req.body.client || '',
-            location: req.body.location || '',
-            year: req.body.year || '',
-            scale: req.body.scale || ''
-        });
+router.put(
+    "/:id",
+    protectAdmin,
+    uploadCloud.fields([
+        { name: "coverImage", maxCount: 1 },
+        { name: "images", maxCount: 15 },
+        { name: "renderImages", maxCount: 15 },
+        { name: "floorPlans", maxCount: 15 },
+        { name: "videoFile", maxCount: 1 },
+        { name: "videos", maxCount: 10 },
+    ]),
+    async (req, res) => {
+        try {
+            const existingProject = await Project.findById(req.params.id);
+            if (!existingProject) {
+                return res.status(404).json({ success: false, message: "Project not found" });
+            }
 
-        await newProject.save();
-        res.json({ success: true, data: newProject });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
+            const payload = {
+                title: req.body.title !== undefined ? req.body.title : existingProject.title,
+                category: req.body.category !== undefined ? req.body.category : existingProject.category,
+                description: req.body.description !== undefined ? req.body.description : existingProject.description,
+                featured: req.body.featured !== undefined ? normalizeBoolean(req.body.featured) : existingProject.featured,
+                coverImage: req.files?.coverImage?.[0]?.path || existingProject.coverImage,
+                images: req.files?.images ? mapUploadedFiles(req.files, "images") : existingProject.images || [],
+                renderImages: req.files?.renderImages ? mapUploadedFiles(req.files, "renderImages") : existingProject.renderImages || [],
+                floorPlans: req.files?.floorPlans ? mapUploadedFiles(req.files, "floorPlans") : existingProject.floorPlans || [],
+                videos: req.files?.videos ? mapUploadedFiles(req.files, "videos") : existingProject.videos || [],
+                videoUrl: req.files?.videoFile?.[0]?.path || (req.body.videoUrl !== undefined ? req.body.videoUrl : existingProject.videoUrl || ""),
+                client: req.body.client !== undefined ? req.body.client : existingProject.client,
+                location: req.body.location !== undefined ? req.body.location : existingProject.location,
+                year: req.body.year !== undefined ? req.body.year : existingProject.year,
+                scale: req.body.scale !== undefined ? req.body.scale : existingProject.scale,
+                status: req.body.status !== undefined ? req.body.status : existingProject.status,
+                area: req.body.area !== undefined ? req.body.area : existingProject.area,
+                projectType: req.body.projectType !== undefined ? req.body.projectType : existingProject.projectType,
+                projectSheet: {
+                    client: req.body.client !== undefined ? req.body.client : existingProject.client,
+                    location: req.body.location !== undefined ? req.body.location : existingProject.location,
+                    year: req.body.year !== undefined ? req.body.year : existingProject.year,
+                    scale: req.body.scale !== undefined ? req.body.scale : existingProject.scale,
+                    status: req.body.status !== undefined ? req.body.status : existingProject.status,
+                    area: req.body.area !== undefined ? req.body.area : existingProject.area,
+                    projectType: req.body.projectType !== undefined ? req.body.projectType : existingProject.projectType,
+                },
+            };
 
-// ৪. Project Update / Change Kora (🌟 Full Fixed)
-router.put("/:id", uploadCloud.fields([
-    { name: 'coverImage', maxCount: 1 },
-    { name: 'images', maxCount: 15 },
-    { name: 'videoFile', maxCount: 1 }
-]), async (req, res) => {
-    try {
-        const existingProject = await Project.findById(req.params.id);
-        if (!existingProject) return res.status(404).json({ success: false, message: "Project not found" });
+            const ignoredFields = new Set(["title", "category", "description", "featured", "coverImage", "images", "renderImages", "floorPlans", "videos", "videoFile", "videoUrl", "client", "location", "year", "scale", "status", "area", "projectType"]);
+            Object.entries(req.body).forEach(([key, value]) => {
+                if (!ignoredFields.has(key)) {
+                    payload[key] = value;
+                }
+            });
 
-        let coverImageUrl = existingProject.coverImage;
-        if (req.files && req.files['coverImage']) {
-            coverImageUrl = req.files['coverImage'][0].path;
+            const updatedProject = await Project.findByIdAndUpdate(req.params.id, payload, { new: true });
+            res.json({ success: true, data: updatedProject });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
         }
+    },
+);
 
-        let galleryUrls = existingProject.images;
-        if (req.files && req.files['images']) {
-            galleryUrls = req.files['images'].map(file => file.path);
-        }
-
-        let videoUrl = existingProject.videoUrl;
-        if (req.files && req.files['videoFile']) {
-            videoUrl = req.files['videoFile'][0].path;
-        } else if (req.body.videoUrl !== undefined) {
-            videoUrl = req.body.videoUrl;
-        }
-
-        const updatedData = {
-            title: req.body.title || existingProject.title,
-            category: req.body.category || existingProject.category,
-            description: req.body.description !== undefined ? req.body.description : existingProject.description,
-            featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
-            coverImage: coverImageUrl,
-            images: galleryUrls,
-            videoUrl: videoUrl,
-            client: req.body.client !== undefined ? req.body.client : existingProject.client,
-            location: req.body.location !== undefined ? req.body.location : existingProject.location,
-            year: req.body.year !== undefined ? req.body.year : existingProject.year,
-            scale: req.body.scale !== undefined ? req.body.scale : existingProject.scale
-        };
-
-        const updatedProject = await Project.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.json({ success: true, data: updatedProject });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ৫. Delete route
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protectAdmin, async (req, res) => {
     try {
         await Project.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: "Project deleted successfully" });

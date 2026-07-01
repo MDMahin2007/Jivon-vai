@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
+  Navigate,
   Route,
   Routes,
   useLocation,
@@ -17,6 +18,7 @@ import Contact from "./pages/Contact";
 import RunningProject from "./pages/RunningProject";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -30,11 +32,27 @@ function ScrollToTop() {
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <AppLayout />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <AppLayout />
+      </Router>
+    </AuthProvider>
   );
+}
+
+function ProtectedAdminRoute({ children }) {
+  const { initialized, token } = useAuth();
+
+  if (!initialized) {
+    return null;
+  }
+
+  if (!token) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return children;
 }
 
 function AppLayout() {
@@ -61,7 +79,14 @@ function AppLayout() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/running-project" element={<RunningProject />} />
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/:section" element={<AdminDashboard />} />
+          <Route
+            path="/admin/:section"
+            element={
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
         </Routes>
       </main>
       {!isAdminRoute && <Footer />}
