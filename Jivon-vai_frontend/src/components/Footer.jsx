@@ -1,6 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FaFacebookF,
+  FaBehance,
+  FaInstagram,
+  FaLinkedinIn,
+} from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -12,47 +17,81 @@ export default function Footer() {
             Arcforma <span className="text-primary">Studio</span>
           </h4>
           <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-            Elevating architectural spaces with timeless design, functional blueprints, and photorealistic 3D visualizations.
+            Elevating architectural spaces with timeless design, functional
+            blueprints, and photorealistic 3d Architectural visualizer.lumion,
+            v-ray&D5 expert.
           </p>
         </div>
 
-        {/* Quick Links */}
         <div>
-          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">INFORMATION</h5>
+          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">
+            INFORMATION
+          </h5>
           <ul className="flex flex-col gap-3 text-sm">
             <li>
-              <Link to="/" className="hover:text-primary transition-colors duration-300">Menu / Home</Link>
+              <Link
+                to="/"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                Menu / Home
+              </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:text-primary transition-colors duration-300">About Us</Link>
+              <Link
+                to="/about"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                About Us
+              </Link>
             </li>
             <li>
-              <Link to="/gallery" className="hover:text-primary transition-colors duration-300">Gallery</Link>
+              <Link
+                to="/gallery"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                Gallery
+              </Link>
             </li>
             <li>
-              <Link to="/services" className="hover:text-primary transition-colors duration-300">Services</Link>
+              <Link
+                to="/services"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                Services
+              </Link>
             </li>
             <li>
-              <Link to="/projects" className="hover:text-primary transition-colors duration-300">Projects</Link>
+              <Link
+                to="/projects"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                Projects
+              </Link>
             </li>
             <li>
-              <Link to="/running-project" className="hover:text-primary transition-colors duration-300 text-primary/80">Running Project</Link>
+              <Link
+                to="/running-project"
+                className="hover:text-primary transition-colors duration-300 text-primary/80"
+              >
+                Running Project
+              </Link>
             </li>
           </ul>
         </div>
 
         {/* Contacts */}
         <div>
-          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">CONTACTS</h5>
+          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">
+            CONTACTS
+          </h5>
           <ul className="flex flex-col gap-3 text-sm">
-            <li className="leading-relaxed">
-              Dhaka, Bangladesh
-            </li>
+            <li className="leading-relaxed">Dhaka, Bangladesh</li>
+            <li>+8801882111979</li>
             <li>
-              +8801882111979
-            </li>
-            <li>
-              <a href="mailto:arcformastudio@gmail.com" className="hover:text-primary transition-colors duration-300">
+              <a
+                href="mailto:arcformastudio@gmail.com"
+                className="hover:text-primary transition-colors duration-300"
+              >
                 arcformastudio@gmail.com
               </a>
             </li>
@@ -61,10 +100,12 @@ export default function Footer() {
 
         {/* Social Links */}
         <div>
-          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">SOCIAL MEDIA</h5>
+          <h5 className="text-white font-heading text-sm tracking-widest font-semibold mb-6">
+            SOCIAL MEDIA
+          </h5>
           <div className="flex items-center gap-4">
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/ArcformaStudio/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-white hover:text-dark hover:bg-primary hover:border-primary transition-all duration-300"
@@ -73,13 +114,13 @@ export default function Footer() {
               <FaFacebookF size={16} />
             </a>
             <a
-              href="https://twitter.com"
+              href="https://www.behance.net/armanhosenjibon19"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-white hover:text-dark hover:bg-primary hover:border-primary transition-all duration-300"
-              aria-label="Twitter"
+              aria-label="Behance"
             >
-              <FaTwitter size={16} />
+              <FaBehance size={16} />
             </a>
             <a
               href="https://instagram.com"
@@ -104,7 +145,10 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-dark-border/20 text-center text-xs text-gray-600">
-        <p>&copy; {new Date().getFullYear()} Arcforma Studio. All Rights Reserved.</p>
+        <p>
+          &copy; {new Date().getFullYear()} Arcforma Studio. All Rights
+          Reserved.
+        </p>
       </div>
     </footer>
   );
