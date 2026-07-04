@@ -357,41 +357,21 @@ export default function Home() {
       <section className="py-24 bg-dark-accent border-t border-dark-border/10">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-primary font-heading text-xs tracking-[0.3em] font-bold mb-3">
-            SERVICES
+            Elevating Spaces with Elegance & Precision From
+            Concept to Completion We Deliver Excellence.
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-16 tracking-wide text-white">
-            Solutions We Provide
+            Our Services
           </h2>
+          <Link
+            to="/services"
+            className="ml-auto text-xs text-primary font-heading font-bold hover:underline tracking-widest mt-4 md:mt-0 uppercase"
+          >
+            ALL SERVICES &rarr;
+          </Link>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-panel p-10 flex flex-col items-start text-left hover-glow">
-              <h3 className="text-xl font-bold font-heading mb-4 text-white">
-                Visual Design
-              </h3>
-              <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                From structural concepts to hyper-realistic walkthrough
-                animations, we deliver unmatched drafting excellence.
-              </p>
-              <ul className="text-xs text-gray-500 flex flex-col gap-2 font-heading font-medium">
-                <li className="flex items-center gap-2">
-                  <FaCheck className="text-primary" /> Architectural Building
-                  Design
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaCheck className="text-primary" /> 3D Exterior & Interior
-                  Renders
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaCheck className="text-primary" /> Modern Space Planning
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaCheck className="text-primary" /> Walkthrough Video
-                  Production
-                </li>
-              </ul>
-            </div>
-
             {!loadingServices &&
-              services.slice(0, 2).map((service) => (
+              services.slice(0, 5).map((service) => (
                 <div
                   key={service.id}
                   className="glass-panel p-10 flex flex-col items-start text-left hover-glow"
