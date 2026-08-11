@@ -11,6 +11,9 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function Home() {
   const navigate = useNavigate();
 
@@ -71,7 +74,7 @@ export default function Home() {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/projects");
+        const response = await fetch(`${API_BASE_URL}/projects`);
         const data = await response.json();
         if (data.success) {
           setProjects(data.data || []);
@@ -85,7 +88,7 @@ export default function Home() {
 
     const loadServices = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/services");
+        const response = await fetch(`${API_BASE_URL}/services`);
         const data = await response.json();
         if (data.success) {
           setServices(data.data || []);
@@ -157,16 +160,13 @@ export default function Home() {
       setLoading(true); // লোডিং শুরু
       try {
         // 🌟 ব্যাকঅ্যান্ড এক্সপ্রেস সার্ভারে হোমপেজের ফর্ম ডেটা পাঠানো হচ্ছে
-        const response = await fetch(
-          "http://localhost:5000/api/contact/send-email",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formValues),
+        const response = await fetch(`${API_BASE_URL}/contact/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(formValues),
+        });
 
         const data = await response.json();
 
@@ -357,8 +357,8 @@ export default function Home() {
       <section className="py-24 bg-dark-accent border-t border-dark-border/10">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-primary font-heading text-xs tracking-[0.3em] font-bold mb-3">
-            Elevating Spaces with Elegance & Precision From
-            Concept to Completion We Deliver Excellence.
+            Elevating Spaces with Elegance & Precision From Concept to
+            Completion We Deliver Excellence.
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-16 tracking-wide text-white">
             Our Services

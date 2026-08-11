@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function Contact() {
   const [formValues, setFormValues] = useState({
     name: "",
@@ -53,16 +56,13 @@ export default function Contact() {
       setLoading(true); // লোডিং শুরু
       try {
         // 🌟 আপনার ব্যাকঅ্যান্ড এক্সপ্রেস সার্ভারে ফর্ম ডেটা পাঠানো হচ্ছে
-        const response = await fetch(
-          "http://localhost:5000/api/contact/send-email",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formValues),
+        const response = await fetch(`${API_BASE_URL}/contact/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(formValues),
+        });
 
         const data = await response.json();
 

@@ -38,9 +38,21 @@ export const createContact = async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    let emailSent = false;
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      await transporter.sendMail(mailOptions);
+      emailSent = true;
+    } else {
+      console.warn("EMAIL_USER or EMAIL_PASS not configured. Contact message saved without sending email.");
+    }
 
-    res.status(201).json({ success: true, message: "Message saved and email sent successfully!", data: newContact });
+    res.status(201).json({
+      success: true,
+      message: emailSent
+        ? "Message saved and email sent successfully!"
+        : "Message saved successfully, but email notification is not configured.",
+      data: newContact,
+    });
   } catch (error) {
     console.error("Error in createContact:", error);
     res.status(500).json({ success: false, message: error.message });

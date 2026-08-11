@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function Gallery() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,7 +11,7 @@ export default function Gallery() {
   useEffect(() => {
     const loadGallery = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/projects");
+        const response = await fetch(`${API_BASE_URL}/projects`);
         const data = await response.json();
         if (!response.ok || !data.success) {
           throw new Error(data.message || "Unable to load gallery images.");

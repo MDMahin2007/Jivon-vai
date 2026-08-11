@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/services")
+    fetch(`${API_BASE_URL}/services`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setServices(data.data);

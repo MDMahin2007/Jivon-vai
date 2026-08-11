@@ -1,5 +1,6 @@
 import express from "express";
 import Service from "../models/service.model.js";
+import { protectAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 
 // ২. নতুন সার্ভিস তৈরি করা
-router.post("/", async (req, res) => {
+router.post("/", protectAdmin, async (req, res) => {
     try {
         const newService = new Service(req.body);
         await newService.save();
@@ -25,7 +26,7 @@ router.post("/", async (req, res) => {
 });
 
 // ৩. সার্ভিস এডিট করা
-router.put("/:id", async (req, res) => {
+router.put("/:id", protectAdmin, async (req, res) => {
     try {
         const updatedService = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json({ success: true, data: updatedService });
@@ -35,7 +36,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // ৪. সার্ভিস ডিলিট করা
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protectAdmin, async (req, res) => {
     try {
         await Service.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: "Service deleted successfully" });
