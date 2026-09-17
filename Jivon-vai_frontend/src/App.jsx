@@ -32,12 +32,17 @@ function ScrollToTop() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
+      <AuthProvider>
         <ScrollToTop />
         <AppLayout />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

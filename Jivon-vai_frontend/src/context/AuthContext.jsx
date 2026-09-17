@@ -12,13 +12,22 @@ const AuthContext = createContext(null);
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const STORAGE_KEY = "jivonvai_admin_auth";
+const LEGACY_STORAGE_KEY = "arcforma_admin_auth";
 
 const client = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
 function readStoredAuth() {
   const readFromStorage = (storage) => {
     try {
-      return JSON.parse(storage.getItem(STORAGE_KEY) || "null");
+      const current = JSON.parse(storage.getItem(STORAGE_KEY) || "null");
+      if (current?.token) return current;
+
+      const legacy = JSON.parse(storage.getItem(LEGACY_STORAGE_KEY) || "null");
+      if (legacy?.token) {
+        storage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+        storage.removeItem(LEGACY_STORAGE_KEY);
+      }
+      return legacy;
     } catch (error) {
       return null;
     }
@@ -82,6 +91,8 @@ export function AuthProvider({ children }) {
     setRememberMe(false);
     localStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    sessionStorage.removeItem(LEGACY_STORAGE_KEY);
   };
 
   const loadStoredAuth = async () => {

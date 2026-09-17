@@ -10,6 +10,7 @@ This project is a full-stack architecture and interior design portfolio website 
 ## Tech stack
 
 Frontend
+
 - React 18
 - Vite
 - Tailwind CSS
@@ -18,6 +19,7 @@ Frontend
 - React Icons
 
 Backend
+
 - Node.js
 - Express 5
 - MongoDB + Mongoose

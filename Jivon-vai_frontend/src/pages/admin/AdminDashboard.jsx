@@ -73,6 +73,8 @@ async function parseResponse(response) {
 
 function authHeaders(extra = {}) {
   const stored =
+    JSON.parse(localStorage.getItem("jivonvai_admin_auth") || "null") ||
+    JSON.parse(sessionStorage.getItem("jivonvai_admin_auth") || "null") ||
     JSON.parse(localStorage.getItem("arcforma_admin_auth") || "null") ||
     JSON.parse(sessionStorage.getItem("arcforma_admin_auth") || "null");
   const token = stored?.token;

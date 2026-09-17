@@ -1,11 +1,16 @@
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const AUTH_STORAGE_KEY = "jivonvai_admin_auth";
+const LEGACY_AUTH_STORAGE_KEY = "arcforma_admin_auth";
 
 const client = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
 client.interceptors.request.use((config) => {
-    const stored = JSON.parse(localStorage.getItem("jivonvai_admin_auth") || "null") || JSON.parse(sessionStorage.getItem("jivonvai_admin_auth") || "null");
+    const stored = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null") ||
+        JSON.parse(sessionStorage.getItem(AUTH_STORAGE_KEY) || "null") ||
+        JSON.parse(localStorage.getItem(LEGACY_AUTH_STORAGE_KEY) || "null") ||
+        JSON.parse(sessionStorage.getItem(LEGACY_AUTH_STORAGE_KEY) || "null");
     const token = stored?.token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;

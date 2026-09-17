@@ -10,10 +10,13 @@ export default function Services() {
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/services`)
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (response) => ({
+        ok: response.ok,
+        data: await response.json(),
+      }))
+      .then(({ ok, data }) => {
         if (
-          res.ok &&
+          ok &&
           data.success &&
           Array.isArray(data.data) &&
           data.data.length
