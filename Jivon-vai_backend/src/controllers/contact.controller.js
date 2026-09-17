@@ -9,8 +9,21 @@ export const createContact = async (req, res) => {
   try {
     const { name, email, phone, interest, message } = req.body;
 
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({ success: false, message: "Name must be at least 2 characters." });
+    }
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ success: false, message: "Please provide a valid email address." });
+    }
+    if (!phone || phone.trim().length < 5) {
+      return res.status(400).json({ success: false, message: "A valid phone number is required." });
+    }
+    if (!message || message.trim().length < 10) {
+      return res.status(400).json({ success: false, message: "Message must be at least 10 characters." });
+    }
+
     // ডাটাবেজে সেভ করা
-    const newContact = new Contact({ name, email, phone, interest, message });
+    const newContact = new Contact({ name: name.trim(), email: email.toLowerCase().trim(), phone: phone.trim(), interest: interest?.trim() || "", message: message.trim() });
     await newContact.save();
 
     // নোডमেইলার কনফিগারেশন
@@ -24,7 +37,7 @@ export const createContact = async (req, res) => {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: "mdmahinuddin832@gmail.com", // 🌟 আপনার কাঙ্ক্ষিত জিমেইল আইডি
+      to: process.env.CONTACT_RECIPIENT || process.env.EMAIL_USER,
       replyTo: email, // ইউজারকে সরাসরি রিপ্লাই দেওয়ার জন্য
       subject: `New Contact Submission from ${name}`,
       text: `
@@ -39,7 +52,7 @@ export const createContact = async (req, res) => {
     };
 
     let emailSent = false;
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS && (process.env.CONTACT_RECIPIENT || process.env.EMAIL_USER)) {
       await transporter.sendMail(mailOptions);
       emailSent = true;
     } else {

@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import Project from "../models/project.model.js";
 import uploadCloud from "../config/cloudinaryConfig.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
@@ -17,6 +18,13 @@ const mapUploadedFiles = (files = {}, fieldName) => {
     return uploaded.map((file) => file.path);
 };
 
+const validateProjectInput = ({ title, category, description }) => {
+    if (!title || title.trim().length < 2) return "Project title must be at least 2 characters.";
+    if (!category || category.trim().length < 2) return "Project category is required.";
+    if (!description || description.trim().length < 10) return "Project description must be at least 10 characters.";
+    return null;
+};
+
 router.get("/", async (req, res) => {
     try {
         const projects = await Project.find().sort({ createdAt: -1 });
@@ -28,6 +36,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, message: "Invalid project identifier." });
+        }
         const project = await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ success: false, message: "Project not found" });
@@ -51,6 +62,11 @@ router.post(
     ]),
     async (req, res) => {
         try {
+            const validationError = validateProjectInput(req.body);
+            if (validationError) {
+                return res.status(400).json({ success: false, message: validationError });
+            }
+
             const coverImageUrl = req.files?.coverImage?.[0]?.path || "";
             if (!coverImageUrl) {
                 return res.status(400).json({ success: false, message: "Cover image is required!" });
@@ -113,6 +129,10 @@ router.put(
     ]),
     async (req, res) => {
         try {
+            if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+                return res.status(400).json({ success: false, message: "Invalid project identifier." });
+            }
+
             const existingProject = await Project.findById(req.params.id);
             if (!existingProject) {
                 return res.status(404).json({ success: false, message: "Project not found" });
@@ -154,7 +174,12 @@ router.put(
                 }
             });
 
-            const updatedProject = await Project.findByIdAndUpdate(req.params.id, payload, { new: true });
+            const validationError = validateProjectInput(payload);
+            if (validationError) {
+                return res.status(400).json({ success: false, message: validationError });
+            }
+
+            const updatedProject = await Project.findByIdAndUpdate(req.params.id, payload, { new: true, runValidators: true });
             res.json({ success: true, data: updatedProject });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -164,6 +189,9 @@ router.put(
 
 router.delete("/:id", protectAdmin, async (req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, message: "Invalid project identifier." });
+        }
         await Project.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: "Project deleted successfully" });
     } catch (error) {
