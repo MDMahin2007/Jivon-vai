@@ -14,12 +14,11 @@ export default function Footer() {
         {/* Brand Info */}
         <div className="flex flex-col gap-4">
           <h4 className="text-2xl font-bold tracking-wider text-white">
-            Arcforma <span className="text-primary">Studio</span>
+            Jivon <span className="text-primary">Vai</span>
           </h4>
           <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-            Elevating architectural spaces with timeless design, functional
-            blueprints, and photorealistic 3d Architectural visualizer.lumion,
-            v-ray&D5 expert.
+            Designing refined living, work, and public spaces through thoughtful
+            architecture, immersive 3D visualization, and precise execution.
           </p>
         </div>
 
@@ -146,7 +145,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-dark-border/20 text-center text-xs text-gray-600">
         <p>
-          &copy; {new Date().getFullYear()} Arcforma Studio. All Rights
+          &copy; {new Date().getFullYear()} Jivon Vai Studio. All Rights
           Reserved.
         </p>
       </div>

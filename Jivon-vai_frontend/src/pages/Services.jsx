@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { servicesData } from "../data/projects";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -11,9 +12,21 @@ export default function Services() {
     fetch(`${API_BASE_URL}/services`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setServices(data.data);
+        if (
+          res.ok &&
+          data.success &&
+          Array.isArray(data.data) &&
+          data.data.length
+        ) {
+          setServices(data.data);
+        } else {
+          setServices(servicesData);
+        }
       })
-      .catch((err) => console.error("Error loading services:", err))
+      .catch((err) => {
+        console.error("Error loading services:", err);
+        setServices(servicesData);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -24,26 +37,29 @@ export default function Services() {
 
   return (
     <div className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mb-10 text-white tracking-wider uppercase">
+      <h1 className="text-4xl font-bold mt-10 text-white tracking-wider uppercase">
         Our Services
       </h1>
       {services.length === 0 ? (
         <p className="text-gray-500">No services added yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {services.map((service) => (
-            <div
-              key={service._id}
-              className="border border-white/10 p-8 bg-[#090909] hover:border-primary/50 transition-colors"
-            >
-              <h3 className="text-2xl font-bold text-white mb-4">
-                {service.title}
-              </h3>
-              <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line">
-                {service.description}
-              </p>
-            </div>
-          ))}
+          {services.map((service) => {
+            const serviceId = service._id || service.id;
+            return (
+              <div
+                key={serviceId}
+                className="border border-white/10 p-8 bg-[#090909] hover:border-primary/50 transition-colors"
+              >
+                <h3 className="text-2xl font-bold text-white mb-4">
+                  {service.title}
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line">
+                  {service.description}
+                </p>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

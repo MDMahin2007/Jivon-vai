@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
+import { projectsData } from "../data/projects";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -23,14 +24,48 @@ export default function ProjectDetail() {
       try {
         const response = await fetch(`${API_BASE_URL}/projects/${id}`);
         const data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || "Unable to load project details.");
+
+        if (response.ok && data.success && data.data) {
+          if (isMounted) {
+            setProject(data.data);
+          }
+          return;
         }
 
-        if (isMounted) {
-          setProject(data.data);
+        const localProject = projectsData.find(
+          (item) => String(item.id) === String(id),
+        );
+
+        if (localProject && isMounted) {
+          setProject({
+            ...localProject,
+            _id: String(localProject.id),
+            images: localProject.images || [],
+            renderImages: localProject.renderImages || [],
+            floorPlans: localProject.floorPlans || [],
+            videos: localProject.videos || [],
+          });
+          return;
         }
+
+        throw new Error(data.message || "Unable to load project details.");
       } catch (requestError) {
+        const fallbackProject = projectsData.find(
+          (item) => String(item.id) === String(id),
+        );
+
+        if (fallbackProject && isMounted) {
+          setProject({
+            ...fallbackProject,
+            _id: String(fallbackProject.id),
+            images: fallbackProject.images || [],
+            renderImages: fallbackProject.renderImages || [],
+            floorPlans: fallbackProject.floorPlans || [],
+            videos: fallbackProject.videos || [],
+          });
+          return;
+        }
+
         if (isMounted) {
           setError(requestError.message || "Unable to load project details.");
         }

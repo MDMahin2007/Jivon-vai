@@ -1,8 +1,8 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { teamData } from '../data/projects';
-import { FaGraduationCap, FaAward, FaBuilding } from 'react-icons/fa';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { teamData } from "../data/projects";
+import { FaGraduationCap, FaAward, FaBuilding } from "react-icons/fa";
 
 export default function About() {
   const navigate = useNavigate();
@@ -49,18 +49,16 @@ export default function About() {
             </h2>
             <div className="text-gray-400 font-sans text-sm sm:text-base leading-relaxed flex flex-col gap-6">
               <p>
-                Welcome to <strong>Arcforma Studio</strong>. We are a dedicated
-                and innovative architectural visualization company focused on
-                delivering high-quality visual designs to our clients. Our goal
-                is to provide reliable, efficient, 3d Architectural
-                visualizer.lumion, v-ray&D5 and modern structural design
-                concepts that inspire and scale.
+                Welcome to <strong>Jivon Vai Studio</strong>. We are a dedicated
+                architectural and interior design studio creating refined spaces
+                through intelligent planning, expressive materiality, and
+                immersive visualization that turns ideas into lasting value.
               </p>
               <p>
-                At Arcforma Studio, we believe in professionalism, creativity,
-                and customer satisfaction. Our expert design team works hard to
-                understand the needs of our clients and deliver results that
-                exceed expectations.
+                At Jivon Vai Studio, we believe in professionalism, creativity,
+                and client-focused execution. Our team blends design thinking
+                with technical detail to deliver spaces that feel elegant,
+                functional, and deeply personal.
               </p>
               <p>
                 We specialize in Architectural Building Design, 3D Exterior &

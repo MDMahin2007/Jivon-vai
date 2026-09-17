@@ -10,6 +10,7 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import { projectsData, servicesData } from "../data/projects";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -24,7 +25,7 @@ export default function Home() {
       title: "Structural Elegance",
       subtitle: "FEATURED PROJECT",
       description:
-        "At Arcforma Studio, we combine physical structure with visual intelligence to create breathtaking architectural solutions.",
+        "At Jivon Vai Studio, we combine thoughtful structure with visual precision to create inspiring architectural experiences.",
     },
     {
       image: "/img/project-1/Scene 25_1.png",
@@ -76,11 +77,20 @@ export default function Home() {
       try {
         const response = await fetch(`${API_BASE_URL}/projects`);
         const data = await response.json();
-        if (data.success) {
-          setProjects(data.data || []);
+
+        if (
+          response.ok &&
+          data.success &&
+          Array.isArray(data.data) &&
+          data.data.length
+        ) {
+          setProjects(data.data);
+        } else {
+          setProjects(projectsData);
         }
       } catch (error) {
         console.error("Error loading projects:", error);
+        setProjects(projectsData);
       } finally {
         setLoadingProjects(false);
       }
@@ -90,11 +100,20 @@ export default function Home() {
       try {
         const response = await fetch(`${API_BASE_URL}/services`);
         const data = await response.json();
-        if (data.success) {
-          setServices(data.data || []);
+
+        if (
+          response.ok &&
+          data.success &&
+          Array.isArray(data.data) &&
+          data.data.length
+        ) {
+          setServices(data.data);
+        } else {
+          setServices(servicesData);
         }
       } catch (error) {
         console.error("Error loading services:", error);
+        setServices(servicesData);
       } finally {
         setLoadingServices(false);
       }
@@ -105,7 +124,10 @@ export default function Home() {
   }, []);
 
   const featuredProjects = useMemo(
-    () => projects.filter((project) => project.featured).slice(0, 5),
+    () =>
+      projects.length
+        ? projects.filter((project) => project.featured).slice(0, 5)
+        : projectsData.filter((project) => project.featured).slice(0, 5),
     [projects],
   );
 
@@ -321,19 +343,18 @@ export default function Home() {
               ABOUT US
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-6 tracking-wide text-white">
-              Arcforma Studio
+              Jivon Vai Studio
             </h2>
             <p className="text-gray-400 font-sans leading-relaxed mb-6 text-sm sm:text-base">
-              Welcome to <strong>Arcforma Studio</strong>. We are a dedicated
-              and innovative architectural visualization company focused on
-              delivering high-quality visual designs to our clients. Our goal is
-              to provide reliable, efficient, and modern structural design
-              concepts that inspire and scale.
+              Welcome to <strong>Jivon Vai Studio</strong>. We are a dedicated
+              architectural and interior design practice focused on thoughtful
+              planning, premium detailing, and confident execution from concept
+              to completion.
             </p>
             <p className="text-gray-400 font-sans leading-relaxed mb-8 text-sm sm:text-base">
-              At Arcforma Studio, we believe in professionalism, creativity, and
-              customer satisfaction. Our expert design team works tirelessly to
-              map blueprints into cinematic 3D environments.
+              At Jivon Vai Studio, we believe in precision, creativity, and a
+              human-centered design process. Our team turns ideas into spaces
+              that are elegant, practical, and built to last.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
@@ -371,25 +392,28 @@ export default function Home() {
           </Link>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {!loadingServices &&
-              services.slice(0, 5).map((service) => (
-                <div
-                  key={service.id}
-                  className="glass-panel p-10 flex flex-col items-start text-left hover-glow"
-                >
-                  <h3 className="text-xl font-bold font-heading mb-4 text-white">
-                    {service.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                    {service.description}
-                  </p>
-                  <Link
-                    to="/services"
-                    className="text-xs text-primary font-heading font-bold hover:underline tracking-widest mt-auto uppercase"
+              services.slice(0, 5).map((service) => {
+                const serviceId = service._id || service.id;
+                return (
+                  <div
+                    key={serviceId}
+                    className="glass-panel p-10 flex flex-col items-start text-left hover-glow"
                   >
-                    LEARN DETAILS &rarr;
-                  </Link>
-                </div>
-              ))}
+                    <h3 className="text-xl font-bold font-heading mb-4 text-white">
+                      {service.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                      {service.description}
+                    </p>
+                    <Link
+                      to="/services"
+                      className="text-xs text-primary font-heading font-bold hover:underline tracking-widest mt-auto uppercase"
+                    >
+                      LEARN DETAILS &rarr;
+                    </Link>
+                  </div>
+                );
+              })}
           </div>
 
           <div className="mt-16 flex justify-center gap-4">
@@ -432,14 +456,15 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {!loadingProjects &&
               featuredProjects.map((project, idx) => {
+                const projectId = project._id || project.id;
                 const gridSpan =
                   idx === 0 || idx === 1
                     ? "md:col-span-6 h-[400px]"
                     : "md:col-span-4 h-[300px]";
                 return (
                   <div
-                    key={project.id}
-                    onClick={() => navigate(`/project/${project.id}`)}
+                    key={projectId}
+                    onClick={() => navigate(`/project/${projectId}`)}
                     className={`group relative overflow-hidden bg-dark-card border border-dark-border/40 cursor-pointer ${gridSpan}`}
                   >
                     <img

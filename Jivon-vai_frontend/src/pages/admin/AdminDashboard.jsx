@@ -429,12 +429,12 @@ export default function AdminDashboard() {
               <Link to="/" className="flex items-center gap-3">
                 <img
                   src="/img/logo.png"
-                  alt="Arcforma Studio"
+                  alt="Jivon Vai Studio"
                   className="h-12 w-12 rounded-full border border-primary/50 object-cover shadow-lg"
                 />
                 <div>
                   <p className="font-heading text-[10px] font-bold uppercase tracking-[0.28em] text-primary">
-                    Arcforma
+                    Jivon Vai
                   </p>
                   <p
                     className={`font-heading text-sm font-bold ${
@@ -1050,7 +1050,7 @@ function SettingsPanel({ darkMode }) {
         <div className="space-y-4">
           <ReadOnlyInput
             label="Studio Name"
-            value="Arcforma Studio"
+            value="Jivon Vai Studio"
             darkMode={darkMode}
           />
           <ReadOnlyInput

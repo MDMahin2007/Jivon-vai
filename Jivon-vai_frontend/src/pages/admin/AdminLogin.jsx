@@ -108,7 +108,7 @@ export default function AdminLogin() {
         <section className="hidden items-end px-12 py-14 lg:flex">
           <div className="max-w-xl">
             <p className="font-heading text-xs font-bold uppercase tracking-[0.35em] text-primary">
-              Arcforma Admin
+              Jivon Vai Admin
             </p>
             <h1 className="mt-5 font-heading text-5xl font-extrabold leading-tight">
               Manage a premium architecture portfolio with precision.
@@ -198,7 +198,7 @@ export default function AdminLogin() {
                     name="email"
                     value={formValues.email}
                     onChange={handleChange}
-                    placeholder="admin@arcforma.studio"
+                    placeholder="admin@jivonvai.studio"
                     className="w-full border border-white/10 bg-white/5 px-11 py-3 text-sm text-white outline-none transition-colors placeholder:text-gray-600 focus:border-primary"
                   />
                 </div>
@@ -254,7 +254,7 @@ export default function AdminLogin() {
             <p className="mt-6 text-xs leading-relaxed text-gray-500">
               {adminExists
                 ? "Admin account already configured. Please log in to continue."
-                : "Create your first administrator account for Arcforma Studio."}
+                : "Create your first administrator account for Jivon Vai Studio."}
             </p>
           </div>
         </section>
