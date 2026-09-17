@@ -322,17 +322,17 @@ export default function Home() {
           <div className="relative flex justify-center h-[450px]">
             <img
               src="/img/project-3/Scene 7_1.png"
-              alt="Arcforma 1"
+              alt="Jivon Vai residential concept"
               className="absolute left-0 bottom-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-20"
             />
             <img
               src="/img/project-5/Scene 2(1).png"
-              alt="Arcforma 2"
+              alt="Jivon Vai interior design concept"
               className="absolute right-4 top-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-10"
             />
             <img
               src="/img/project-11/1 (2).png"
-              alt="Arcforma 3"
+              alt="Jivon Vai exterior façade concept"
               className="absolute left-[15%] top-[25%] w-1/2 h-1/2 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-30"
             />
           </div>
@@ -543,7 +543,7 @@ export default function Home() {
                     <h4 className="text-xs tracking-wider font-heading font-bold text-white uppercase">
                       Email
                     </h4>
-                    <p className="text-xs">arcformastudio@gmail.com</p>
+                    <p className="text-xs">hello@jivonvai.com</p>
                   </div>
                 </div>
               </div>

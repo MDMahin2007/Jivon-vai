@@ -1,0 +1,14 @@
+{
+  "name": "jivon-vai-studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix Jivon-vai_backend run dev\" \"npm --prefix Jivon-vai_frontend run dev\"",
+    "build": "npm --prefix Jivon-vai_frontend run build",
+    "start:backend": "npm --prefix Jivon-vai_backend run start",
+    "start:frontend": "npm --prefix Jivon-vai_frontend run preview -- --host 0.0.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

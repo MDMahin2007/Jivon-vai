@@ -159,7 +159,7 @@ export default function Contact() {
                     Email
                   </h4>
                   <p className="text-[11px] text-gray-400 leading-snug break-all">
-                    arcformastudio@gmail.com
+                    hello@jivonvai.com
                   </p>
                 </div>
               </div>

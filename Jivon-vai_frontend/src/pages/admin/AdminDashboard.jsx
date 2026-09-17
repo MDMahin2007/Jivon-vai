@@ -529,7 +529,7 @@ export default function AdminDashboard() {
                 </button>
                 <div>
                   <p className="font-heading text-[10px] font-bold uppercase tracking-[0.32em] text-primary">
-                    Website Management
+                    Jivon Vai Workspace
                   </p>
                   <h1
                     className={`font-heading text-xl font-bold sm:text-2xl ${
@@ -1043,14 +1043,19 @@ function SettingsPanel({ darkMode }) {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <Panel
-        title="Website Identity"
-        subtitle="Basic studio configuration"
+        title="Studio Identity"
+        subtitle="Brand and access details"
         darkMode={darkMode}
       >
         <div className="space-y-4">
           <ReadOnlyInput
             label="Studio Name"
             value="Jivon Vai Studio"
+            darkMode={darkMode}
+          />
+          <ReadOnlyInput
+            label="Contact Email"
+            value="hello@jivonvai.com"
             darkMode={darkMode}
           />
           <ReadOnlyInput

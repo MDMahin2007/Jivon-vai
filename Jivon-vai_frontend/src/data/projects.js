@@ -1,9 +1,9 @@
 export const projectsData = [
   {
     id: 1,
-    title: "Sample Project 1",
+    title: "Modern Family Residence",
     category: "Residential",
-    description: "A high-end residential complex showcasing clean modern architecture, premium textures, and functional interior spaces designed for modern living.",
+    description: "A refined residential concept blending warm materials, natural light, and efficient planning to create a comfortable family lifestyle.",
     coverImage: "/img/project-1/Scene 25_1.png",
     images: [
       "/img/project-1/Image.png",
@@ -20,9 +20,9 @@ export const projectsData = [
   },
   {
     id: 2,
-    title: "Sample Project 2",
+    title: "Courtyard Villa Retreat",
     category: "Residential",
-    description: "An expansive estate combining contemporary aesthetics with organic design. The project includes detailed walk-through clips rendering day-to-night ambiance.",
+    description: "An expansive villa concept focused on indoor-outdoor harmony, landscaped courtyards, and cinematic evening lighting moments.",
     coverImage: "/img/project-2/IMAGE (3).jpg",
     images: [
       "/img/project-2/FLOOR PLAN.png",
@@ -51,9 +51,9 @@ export const projectsData = [
   },
   {
     id: 3,
-    title: "Sample Project 3",
+    title: "Sustainable Urban Villa",
     category: "Residential",
-    description: "Architectural blueprint designs and 3D exterior renders featuring precise spacing, site planning, and sustainable structural frameworks.",
+    description: "Architectural planning and exterior renderings designed around sustainability, daylight optimization, and efficient site use.",
     coverImage: "/img/project-3/Scene 2.png",
     images: [
       "/img/project-3/FLOOR PLAN 1.png",
@@ -68,9 +68,9 @@ export const projectsData = [
   },
   {
     id: 4,
-    title: "Sample Project 4",
+    title: "Md Murad Homes",
     category: "Residential",
-    description: "Md Murad Homes - A bespoke residential villa design utilizing clean masonry lines, warm exterior uplighting, and smart spatial organization.",
+    description: "A bespoke residential villa design using clean masonry lines, warm exterior lighting, and carefully balanced spatial zoning.",
     coverImage: "/img/project-4/1_1 - Photo.jpg",
     images: [
       "/img/project-4/1_1 - Photo.jpg",
@@ -84,9 +84,9 @@ export const projectsData = [
   },
   {
     id: 5,
-    title: "Sample Project 5",
+    title: "Minimalist Living Interior",
     category: "Interior",
-    description: "A high-end interior concept emphasizing minimal layouts, premium built-ins, and architectural lighting configurations.",
+    description: "A polished interior concept centered on quiet luxury, custom woodwork, layered lighting, and light-filled gathering spaces.",
     coverImage: "/img/project-5/Scene 3.png",
     images: [
       "/img/project-5/Image(1).png",
@@ -99,9 +99,9 @@ export const projectsData = [
   },
   {
     id: 6,
-    title: "Sample Project 6",
+    title: "City Edge Apartments",
     category: "Exterior",
-    description: "A modern multistory residential apartment block designed with geometric concrete styling, dynamic terraces, and green zones.",
+    description: "A contemporary multi-unit residential block shaped by clean geometry, landscaped terraces, and urban comfort.",
     coverImage: "/img/project-6/Scene 4.png",
     images: [
       "/img/project-6/Scene 1.png",
@@ -121,9 +121,9 @@ export const projectsData = [
   },
   {
     id: 7,
-    title: "Sample Project 7",
+    title: "Warm Contemporary Duplex",
     category: "Interior",
-    description: "Bespoke living space concept modeling elegant textures, warm paneling, and statement custom furniture.",
+    description: "A tailored living environment with custom cabinetry, tonal finishes, and thoughtfully layered interior clarity.",
     coverImage: "/img/project-7/Scene 2_1.png",
     images: [
       "/img/project-7/Scene 1_1.png",
@@ -136,9 +136,9 @@ export const projectsData = [
   },
   {
     id: 8,
-    title: "Sample Project 8",
+    title: "Luxury Duplex Interior",
     category: "Interior",
-    description: "A comprehensive duplex interior design including drawing room layouts, modular dining spaces, custom kitchen, and luxury bedrooms.",
+    description: "A full-scale duplex interior concept with layered living zones, custom furniture, and refined material storytelling.",
     coverImage: "/img/project-8/GUEST BED (1).jpg",
     images: [
       "/img/project-8/DINING ROOM (1).jpg",
@@ -168,9 +168,9 @@ export const projectsData = [
   },
   {
     id: 9,
-    title: "Sample Project 9",
+    title: "Corporate Headquarters Interior",
     category: "Commercial",
-    description: "Corporate headquarters interior design and architectural execution project. Includes custom zoning, floorplan drawings, and interactive walkthrough renders.",
+    description: "A professional office concept built around productivity, branded identity, and polished client-facing spatial design.",
     coverImage: "/img/project-9/Scene 5.png",
     images: [
       "/img/project-9/Scene 1.png",
@@ -191,9 +191,9 @@ export const projectsData = [
   },
   {
     id: 10,
-    title: "Sample Project 10",
+    title: "Premium Apartment Suite",
     category: "Interior",
-    description: "Luxury apartment design showcasing premium double-height ceilings, marble-clad bathrooms, high-end kitchens, and dynamic lighting schemes.",
+    description: "Luxury apartment detailing with double-height spaces, refined stone finishes, and carefully composed lighting zones.",
     coverImage: "/img/project-10/KITCHEN 1.jpg",
     images: [
       "/img/project-10/BASIN 2.jpg",
@@ -219,9 +219,9 @@ export const projectsData = [
   },
   {
     id: 11,
-    title: "Sample Project 11",
+    title: "Private Residence Elevation",
     category: "Exterior",
-    description: "Bespoke modern home exterior visualization showing elegant metal finishes, wood paneling accents, and manicured landscaping.",
+    description: "A modern facade concept with metal detailing, wood accents, and carefully framed landscaping for a premium street presence.",
     coverImage: "/img/project-11/1 (5).png",
     images: [
       "/img/project-11/1 (1).png",
@@ -235,9 +235,9 @@ export const projectsData = [
   },
   {
     id: 12,
-    title: "Sample Project 12",
+    title: "Contemporary Villa Expression",
     category: "Exterior",
-    description: "Contemporary villa design blending industrial materials with organic landscape styling for a seamless indoor-outdoor transition.",
+    description: "A contemporary villa composition balancing industrial materials, natural textures, and seamless indoor-outdoor transitions.",
     coverImage: "/img/project-12/Scene 2.png",
     images: [
       "/img/project-12/Scene 1.png",
@@ -251,40 +251,40 @@ export const projectsData = [
 export const servicesData = [
   {
     id: "arch",
-    title: "Architectural Building Design",
-    description: "Innovative and sustainable architectural designs tailored to modern aesthetics and urban environments.",
+    title: "Residential Architecture Design",
+    description: "Tailored architectural planning for homes and private villas that balance beauty, comfort, and efficient daily living.",
     icon: "MdOutlineArchitecture"
   },
   {
     id: "render-3d",
     title: "3D Exterior & Interior Visualization",
-    description: "Photorealistic 3D renders representing detailed styling, landscaping, textures, and lighting setups.",
+    description: "Photorealistic concept rendering that helps clients understand materials, layout, atmosphere, and design intent before build.",
     icon: "MdOutlineLayers"
   },
   {
     id: "interior",
-    title: "Modern Interior Design Solutions",
-    description: "Bespoke interiors designed to maximize space utility, comfort, and premium visual elegance.",
+    title: "Interior Styling & Space Planning",
+    description: "Bespoke interior design solutions for premium homes, offices, and hospitality environments, built around lifestyle and use.",
     icon: "MdOutlineWeekend"
   },
   {
     id: "execution",
-    title: "Interior Construction & Execution",
-    description: "Complete design execution, procurement, and craftsmanship guaranteeing translation from blueprint to reality.",
+    title: "Design-to-Execution Support",
+    description: "From concept coordination to execution guidance, we help translate refined architectural ideas into tangible built results.",
     icon: "MdOutlineHomeWork"
   },
   {
     id: "walkthrough",
-    title: "3D Walkthrough Animation",
-    description: "Immersive virtual walkthroughs detailing spatial transitions and architectural details.",
+    title: "Cinematic Walkthrough Animation",
+    description: "Immersive walkthrough visuals that showcase spatial flow, lighting, mood, and material experience with clarity.",
     icon: "MdOutlineSlowMotionVideo"
   }
 ];
 
 export const teamData = [
   {
-    name: "Architect Jibon",
-    role: "Lead Architect & Founder",
+    name: "Jivon Vai",
+    role: "Founder & Principal Architect",
     image: "/img/jibon.jpg"
   }
 ];

@@ -88,10 +88,10 @@ export default function Footer() {
             <li>+8801882111979</li>
             <li>
               <a
-                href="mailto:arcformastudio@gmail.com"
+                href="mailto:hello@jivonvai.com"
                 className="hover:text-primary transition-colors duration-300"
               >
-                arcformastudio@gmail.com
+                hello@jivonvai.com
               </a>
             </li>
           </ul>

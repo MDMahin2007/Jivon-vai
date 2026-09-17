@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 const client = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
 client.interceptors.request.use((config) => {
-    const stored = JSON.parse(localStorage.getItem("arcforma_admin_auth") || "null") || JSON.parse(sessionStorage.getItem("arcforma_admin_auth") || "null");
+    const stored = JSON.parse(localStorage.getItem("jivonvai_admin_auth") || "null") || JSON.parse(sessionStorage.getItem("jivonvai_admin_auth") || "null");
     const token = stored?.token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
