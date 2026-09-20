@@ -17,7 +17,7 @@ const storage = new CloudinaryStorage({
     params: {
         folder: 'arcforma_projects', 
         resource_type: 'auto', 
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'mp4', 'mov', 'webm', 'mkv', 'avi', 'flv', 'wmv', 'mpeg', 'mp3', 'wav', 'ogg'] // অনুমোদিত ফাইল ফরম্যাটের তালিকা ,
+        allowed_formats: ['jpg', 'png', 'jfif', 'jpeg', 'webp', 'mp4', 'mov', 'webm', 'mkv', 'avi', 'flv', 'wmv', 'mpeg', 'mp3', 'wav', 'ogg'] // অনুমোদিত ফাইল ফরম্যাটের তালিকা ,
     },
 });
 

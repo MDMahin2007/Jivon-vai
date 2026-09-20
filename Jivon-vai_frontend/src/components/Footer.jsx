@@ -14,7 +14,7 @@ export default function Footer() {
         {/* Brand Info */}
         <div className="flex flex-col gap-4">
           <h4 className="text-2xl font-bold tracking-wider text-white">
-            Jivon <span className="text-primary">Vai</span>
+            Arcforma <span className="text-primary">Studio</span>
           </h4>
           <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
             Designing refined living, work, and public spaces through thoughtful

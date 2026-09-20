@@ -41,7 +41,7 @@ export default function Projects() {
 
   return (
     <div className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mt-10 text-white tracking-wider uppercase">
+      <h1 className="text-4xl font-bold m-10 text-white tracking-wider uppercase">
         Our Projects
       </h1>
       {projects.length === 0 ? (

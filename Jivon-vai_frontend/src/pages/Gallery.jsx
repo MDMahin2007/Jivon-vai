@@ -95,7 +95,7 @@ export default function Gallery() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-20 sm:px-10">
-      <h1 className="mt-8 text-4xl font-bold uppercase tracking-wider text-white">
+      <h1 className="m-8 text-4xl font-bold uppercase tracking-wider text-white">
         Visual Gallery
       </h1>
       {error ? (

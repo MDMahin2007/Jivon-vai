@@ -1,4 +1,4 @@
-# Jivon Vai Studio
+# ArcformaStudio
 
 This project is a full-stack architecture and interior design portfolio website with a React frontend and Express backend.
 
