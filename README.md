@@ -4,8 +4,8 @@ This project is a full-stack architecture and interior design portfolio website 
 
 ## Project structure
 
-- `Jivon-vai_frontend/` — React + Vite + Tailwind frontend
-- `Jivon-vai_backend/` — Express + MongoDB API and admin management
+- `frontend/` — React + Vite + Tailwind frontend
+- `backend/` — Express + MongoDB API and admin management
 
 ## Tech stack
 
@@ -36,7 +36,7 @@ Backend
 ## Backend setup
 
 1. Open the backend folder:
-   `cd Jivon-vai_backend`
+   `cd backend`
 2. Install dependencies:
    `npm install`
 3. Create a `.env` file based on the project template values, including:
@@ -51,7 +51,7 @@ Backend
 ## Frontend setup
 
 1. Open the frontend folder:
-   `cd Jivon-vai_frontend`
+   `cd frontend`
 2. Install dependencies:
    `npm install`
 3. Start the app:
@@ -64,7 +64,7 @@ Backend
 Frontend production build:
 
 ```bash
-cd Jivon-vai_frontend
+cd frontend
 npm run build
 ```
 
