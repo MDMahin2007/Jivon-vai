@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -49,10 +49,6 @@ export default function Home() {
   ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [projects, setProjects] = useState([]);
-  const [services, setServices] = useState([]);
-  const [loadingProjects, setLoadingProjects] = useState(true);
-  const [loadingServices, setLoadingServices] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -70,64 +66,9 @@ export default function Home() {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   };
 
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/projects`);
-        const data = await response.json();
-
-        if (
-          response.ok &&
-          data.success &&
-          Array.isArray(data.data) &&
-          data.data.length
-        ) {
-          setProjects(data.data);
-        } else {
-          setProjects(projectsData);
-        }
-      } catch (error) {
-        console.error("Error loading projects:", error);
-        setProjects(projectsData);
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-
-    const loadServices = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/services`);
-        const data = await response.json();
-
-        if (
-          response.ok &&
-          data.success &&
-          Array.isArray(data.data) &&
-          data.data.length
-        ) {
-          setServices(data.data);
-        } else {
-          setServices(servicesData);
-        }
-      } catch (error) {
-        console.error("Error loading services:", error);
-        setServices(servicesData);
-      } finally {
-        setLoadingServices(false);
-      }
-    };
-
-    void loadProjects();
-    void loadServices();
-  }, []);
-
-  const featuredProjects = useMemo(
-    () =>
-      projects.length
-        ? projects.filter((project) => project.featured).slice(0, 5)
-        : projectsData.filter((project) => project.featured).slice(0, 5),
-    [projects],
-  );
+  const featuredProjects = projectsData
+    .filter((project) => project.featured)
+    .slice(0, 5);
 
   // Form State
   const [formValues, setFormValues] = useState({
@@ -402,29 +343,28 @@ export default function Home() {
             ALL SERVICES &rarr;
           </Link>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {!loadingServices &&
-              services.slice(0, 5).map((service) => {
-                const serviceId = service._id || service.id;
-                return (
-                  <div
-                    key={serviceId}
-                    className="glass-panel p-10 flex flex-col items-start text-left hover-glow"
+            {servicesData.slice(0, 5).map((service) => {
+              const serviceId = service._id || service.id;
+              return (
+                <div
+                  key={serviceId}
+                  className="glass-panel p-10 flex flex-col items-start text-left hover-glow"
+                >
+                  <h3 className="text-xl font-bold font-heading mb-4 text-white">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                    {service.description}
+                  </p>
+                  <Link
+                    to="/services"
+                    className="text-xs text-primary font-heading font-bold hover:underline tracking-widest mt-auto uppercase"
                   >
-                    <h3 className="text-xl font-bold font-heading mb-4 text-white">
-                      {service.title}
-                    </h3>
-                    <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                      {service.description}
-                    </p>
-                    <Link
-                      to="/services"
-                      className="text-xs text-primary font-heading font-bold hover:underline tracking-widest mt-auto uppercase"
-                    >
-                      LEARN DETAILS &rarr;
-                    </Link>
-                  </div>
-                );
-              })}
+                    LEARN DETAILS &rarr;
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-16 flex justify-center gap-4">
@@ -465,43 +405,42 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {!loadingProjects &&
-              featuredProjects.map((project, idx) => {
-                const projectId = project._id || project.id;
-                const gridSpan =
-                  idx === 0 || idx === 1
-                    ? "md:col-span-6 h-[400px]"
-                    : "md:col-span-4 h-[300px]";
-                return (
-                  <div
-                    key={projectId}
-                    onClick={() => navigate(`/project/${projectId}`)}
-                    className={`group relative overflow-hidden bg-dark-card border border-dark-border/40 cursor-pointer ${gridSpan}`}
-                  >
-                    <img
-                      src={project.coverImage}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-300" />
+            {featuredProjects.map((project, idx) => {
+              const projectId = project._id || project.id;
+              const gridSpan =
+                idx === 0 || idx === 1
+                  ? "md:col-span-6 h-[400px]"
+                  : "md:col-span-4 h-[300px]";
+              return (
+                <div
+                  key={projectId}
+                  onClick={() => navigate(`/project/${projectId}`)}
+                  className={`group relative overflow-hidden bg-dark-card border border-dark-border/40 cursor-pointer ${gridSpan}`}
+                >
+                  <img
+                    src={project.coverImage}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-300" />
 
-                    <div className="absolute inset-0 p-6 flex flex-col justify-end text-left z-20">
-                      <p className="text-primary text-[10px] tracking-widest font-heading font-bold uppercase mb-1">
-                        {project.category}
-                      </p>
-                      <h3 className="text-lg font-bold font-heading text-white group-hover:text-primary transition-colors duration-300">
-                        {project.title}
-                      </h3>
-                    </div>
-
-                    <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-dark/80 border border-primary/40 flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                      <button>
-                        <FaPlus size={12} />
-                      </button>
-                    </div>
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end text-left z-20">
+                    <p className="text-primary text-[10px] tracking-widest font-heading font-bold uppercase mb-1">
+                      {project.category}
+                    </p>
+                    <h3 className="text-lg font-bold font-heading text-white group-hover:text-primary transition-colors duration-300">
+                      {project.title}
+                    </h3>
                   </div>
-                );
-              })}
+
+                  <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-dark/80 border border-primary/40 flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                    <button>
+                      <FaPlus size={12} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

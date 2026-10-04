@@ -1,52 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { projectsData } from "../data/projects";
-import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Projects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/projects`)
-      .then(async (response) => ({
-        ok: response.ok,
-        data: await response.json(),
-      }))
-      .then(({ ok, data }) => {
-        if (
-          ok &&
-          data.success &&
-          Array.isArray(data.data) &&
-          data.data.length
-        ) {
-          setProjects(data.data);
-        } else {
-          setProjects(projectsData);
-        }
-      })
-      .catch((err) => {
-        console.error("Error loading projects:", err);
-        setProjects(projectsData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading)
-    return (
-      <div className="text-center py-20 text-gray-400">Loading Projects...</div>
-    );
-
   return (
     <div className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold m-10 text-white tracking-wider uppercase">
         Our Projects
       </h1>
-      {projects.length === 0 ? (
+      {projectsData.length === 0 ? (
         <p className="text-gray-500">No projects added yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project) => {
+          {projectsData.map((project) => {
             const projectId = project._id || project.id;
             return (
               <div

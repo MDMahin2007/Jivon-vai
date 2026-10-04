@@ -1,85 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { projectsData } from "../data/projects";
-import { API_BASE_URL } from "../services/apiConfig";
 
 export default function ProjectDetail() {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const project = projectsData.find((item) => String(item.id) === String(id));
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeImgIdx, setActiveImgIdx] = useState(0);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadProject = async () => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/projects/${id}`);
-        const data = await response.json();
-
-        if (response.ok && data.success && data.data) {
-          if (isMounted) {
-            setProject(data.data);
-          }
-          return;
-        }
-
-        const localProject = projectsData.find(
-          (item) => String(item.id) === String(id),
-        );
-
-        if (localProject && isMounted) {
-          setProject({
-            ...localProject,
-            _id: String(localProject.id),
-            images: localProject.images || [],
-            renderImages: localProject.renderImages || [],
-            floorPlans: localProject.floorPlans || [],
-            videos: localProject.videos || [],
-          });
-          return;
-        }
-
-        throw new Error(data.message || "Unable to load project details.");
-      } catch (requestError) {
-        const fallbackProject = projectsData.find(
-          (item) => String(item.id) === String(id),
-        );
-
-        if (fallbackProject && isMounted) {
-          setProject({
-            ...fallbackProject,
-            _id: String(fallbackProject.id),
-            images: fallbackProject.images || [],
-            renderImages: fallbackProject.renderImages || [],
-            floorPlans: fallbackProject.floorPlans || [],
-            videos: fallbackProject.videos || [],
-          });
-          return;
-        }
-
-        if (isMounted) {
-          setError(requestError.message || "Unable to load project details.");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadProject();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
 
   const galleryImages = useMemo(() => {
     const items = [
@@ -127,29 +55,14 @@ export default function ProjectDetail() {
     setActiveImgIdx((prev) => (prev + 1) % galleryImages.length);
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-dark px-6 text-center">
-        <div>
-          <p className="font-heading text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Loading project
-          </p>
-          <p className="mt-3 text-sm text-gray-400">
-            Fetching the latest project details from the database.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !project) {
+  if (!project) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-dark px-6 text-center">
         <h2 className="mb-4 font-heading text-2xl font-bold text-white">
           Project Not Found
         </h2>
         <p className="max-w-md text-sm text-gray-400">
-          {error || "The requested project could not be found."}
+          The requested project could not be found.
         </p>
         <Link
           to="/projects"

@@ -1,70 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { projectsData } from "../data/projects";
-import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Gallery() {
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const images = useMemo(
+    () =>
+      projectsData.flatMap((project) =>
+        [
+          ...(project.images || []),
+          ...(project.renderImages || []),
+          ...(project.floorPlans || []),
+        ]
+          .filter(Boolean)
+          .map((image, index) => ({
+            id: `${project.id}-${index}`,
+            title: project.title,
+            category: project.category,
+            image,
+          })),
+      ),
+    [],
+  );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-  useEffect(() => {
-    const loadGallery = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/projects`);
-        const data = await response.json();
-
-        let galleryData = [];
-        if (response.ok && data.success && Array.isArray(data.data)) {
-          galleryData = (data.data || []).flatMap((project) => {
-            const media = [
-              ...(project.images || []),
-              ...(project.renderImages || []),
-              ...(project.floorPlans || []),
-            ];
-
-            return media.filter(Boolean).map((image, index) => ({
-              id: `${project._id || project.id}-${index}`,
-              title: project.title,
-              category: project.category,
-              image,
-            }));
-          });
-        }
-
-        if (!galleryData.length) {
-          galleryData = projectsData.flatMap((project) =>
-            (project.images || []).filter(Boolean).map((image, index) => ({
-              id: `${project.id}-${index}`,
-              title: project.title,
-              category: project.category,
-              image,
-            })),
-          );
-        }
-
-        setImages(galleryData);
-      } catch (requestError) {
-        setError(requestError.message || "Unable to load gallery images.");
-        setImages(
-          projectsData.flatMap((project) =>
-            (project.images || []).filter(Boolean).map((image, index) => ({
-              id: `${project.id}-${index}`,
-              title: project.title,
-              category: project.category,
-              image,
-            })),
-          ),
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void loadGallery();
-  }, []);
 
   const openLightbox = (index) => {
     setActiveImageIndex(index);
@@ -83,22 +41,12 @@ export default function Gallery() {
     setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  if (loading) {
-    return (
-      <div className="py-20 px-5 text-center text-gray-400 sm:px-10">
-        Loading Gallery...
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-7xl px-5 py-20 sm:px-10">
       <h1 className="m-8 text-4xl font-bold uppercase tracking-wider text-white">
         Visual Gallery
       </h1>
-      {error ? (
-        <p className="text-sm text-red-400">{error}</p>
-      ) : images.length === 0 ? (
+      {images.length === 0 ? (
         <p className="text-gray-500">No gallery images available.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
