@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Contact() {
   const [formValues, setFormValues] = useState({

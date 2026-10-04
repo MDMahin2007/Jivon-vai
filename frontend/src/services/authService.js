@@ -1,6 +1,6 @@
 import axios from "axios";
+import { API_BASE_URL } from "./apiConfig";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const AUTH_STORAGE_KEY = "jivonvai_admin_auth";
 const LEGACY_AUTH_STORAGE_KEY = "arcforma_admin_auth";
 

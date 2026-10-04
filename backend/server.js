@@ -19,7 +19,8 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+const frontendUrl =
+    process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app";
 
 
 // ডাটাবেজ কানেক্ট করা

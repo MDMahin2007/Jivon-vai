@@ -57,7 +57,11 @@ Backend
 3. Start the app:
    `npm run dev`
 4. If the frontend needs to talk to the backend, set:
-   `VITE_API_BASE_URL=http://localhost:5000/api`
+   `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api`
+
+   This is also the frontend's default API URL. To use a local backend, override it with `http://localhost:5000/api`.
+
+5. In the Render backend environment, set `FRONTEND_URL=https://jivon-vai-five.vercel.app` so the deployed frontend can access the API through CORS. For local development, set it to `http://localhost:5173` in `backend/.env`.
 
 ## Production build
 

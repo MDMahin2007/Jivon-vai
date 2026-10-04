@@ -11,9 +11,7 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import { projectsData, servicesData } from "../data/projects";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Home() {
   const navigate = useNavigate();
