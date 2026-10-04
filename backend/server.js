@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./src/config/db.js";
@@ -21,6 +22,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const frontendUrl =
     process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app";
+const frontendDistPath = path.resolve(__dirname, "../frontend/dist");
+const frontendIndexPath = path.join(frontendDistPath, "index.html");
 
 
 // ডাটাবেজ কানেক্ট করা
@@ -59,13 +62,19 @@ app.use("/api/contact", contactLimiter, contactRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/projects", projectRoutes);
 
-// স্ট্যাটিক ফ্রন্টএন্ড ফাইল সার্ভ করা
-app.use(express.static(path.join(__dirname, "./dist")));
+if (fs.existsSync(frontendIndexPath)) {
+    app.use(express.static(frontendDistPath));
 
-// ফ্রন্টএন্ড রাউট রিফ্রেশ সাপোর্ট
-app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, "./dist/index.html"));
-});
+    // Frontend routes work on refresh when the frontend build is present.
+    app.get(/^\/(?!api).*/, (req, res) => {
+        res.sendFile(frontendIndexPath);
+    });
+} else {
+    // The frontend is usually deployed separately on Vercel.
+    app.get(/^\/(?!api).*/, (req, res) => {
+        res.redirect(302, `${frontendUrl}${req.originalUrl}`);
+    });
+}
 
 // গ্লোবাল এরর হ্যান্ডলার মিডলওয়যার
 app.use(errorMiddleware);
