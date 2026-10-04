@@ -16,9 +16,6 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import RunningProject from "./pages/RunningProject";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -50,42 +47,17 @@ export default function App() {
         v7_relativeSplatPath: true,
       }}
     >
-      <AuthProvider>
-        <ScrollToTop />
-        <AppLayout />
-      </AuthProvider>
+      <ScrollToTop />
+      <AppLayout />
     </Router>
   );
 }
 
-function ProtectedAdminRoute({ children }) {
-  const { initialized, token } = useAuth();
-
-  if (!initialized) {
-    return null;
-  }
-
-  if (!token) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  return children;
-}
-
 function AppLayout() {
-  const { pathname } = useLocation();
-  const isAdminRoute = pathname.startsWith("/admin");
-
   return (
-    <div
-      className={
-        isAdminRoute
-          ? "min-h-screen bg-[#070707] text-gray-100"
-          : "site-shell flex min-h-screen flex-col text-gray-200"
-      }
-    >
-      {!isAdminRoute && <Navbar />}
-      <main className={isAdminRoute ? "min-h-screen" : "flex-grow"}>
+    <div className="site-shell flex min-h-screen flex-col text-gray-200">
+      <Navbar />
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -95,18 +67,10 @@ function AppLayout() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/running-project" element={<RunningProject />} />
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route
-            path="/admin/:section"
-            element={
-              <ProtectedAdminRoute>
-                <AdminDashboard />
-              </ProtectedAdminRoute>
-            }
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
+      <Footer />
     </div>
   );
 }

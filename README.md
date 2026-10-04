@@ -80,7 +80,7 @@ npm run build
 ## Notes
 
 - The frontend includes demo fallback content when the backend returns empty data.
-- The admin dashboard is protected with JWT-based authentication.
+- The frontend admin dashboard has been removed; protected backend management APIs remain available for authenticated clients.
 - The project is designed to work in both local development and demo-ready environments.
 
 ## Architecture
