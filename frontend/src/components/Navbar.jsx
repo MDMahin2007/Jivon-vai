@@ -27,16 +27,15 @@ export default function Navbar() {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const menuItems = [
-    { label: "MENU", path: "/" },
-    { label: "ABOUT US", path: "/about" },
-    { label: "GALLERY", path: "/gallery" },
-    { label: "SERVICES", path: "/services" },
-    { label: "PROJECTS", path: "/projects" },
-    { label: "CONTACTS", path: "/contact" },
+    { label: "MENU", path: "/#home" },
+    { label: "ABOUT US", path: "/#about" },
+    { label: "SERVICES", path: "/#services" },
+    { label: "PROJECTS", path: "/#projects" },
+    { label: "CONTACTS", path: "/#contact" },
   ];
 
   const isActive = (path) => {
-    return location.pathname === path;
+    return location.pathname === "/" && location.hash === path.slice(1);
   };
 
   return (

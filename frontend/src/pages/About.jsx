@@ -1,12 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { teamData } from "../data/projects";
-import { FaGraduationCap, FaAward, FaBuilding } from "react-icons/fa";
+import { FaGraduationCap } from "react-icons/fa";
 
 export default function About() {
-  const navigate = useNavigate();
-
   return (
     <div className="py-24 bg-dark relative bg-grid-pattern min-h-screen">
       <div className="max-w-7xl mx-auto px-6 mt-12">
@@ -80,7 +77,7 @@ export default function About() {
               </div>
               <div className="glass-panel p-5 border-l-2 border-green-500">
                 <h3 className="text-xl sm:text-2xl font-bold font-heading text-green-500">
-                  2+ Years
+                  3+ Years
                 </h3>
                 <p className="text-[10px] text-gray-500 tracking-wider font-heading font-bold uppercase mt-1">
                   Experience
@@ -98,59 +95,87 @@ export default function About() {
           </div>
         </div>
 
-        {/* Certifications Block */}
-        <div
-          id="certifications"
-          className="py-16 border-t border-dark-border/20 mb-24"
-        >
-          <div className="text-center mb-16">
+        {/* Career and Education */}
+        <div className="py-16 border-t border-dark-border/20 mb-24">
+          <div className="mb-12">
             <p className="text-primary font-heading text-xs tracking-[0.3em] font-bold mb-3">
-              QUALIFICATIONS
+              CAREER & EDUCATION
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold font-heading text-white">
-              Certifications & Standards
+              Arman Hosen Jibon
             </h2>
+            <p className="text-primary font-heading text-sm mt-2">Architect</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-panel p-8 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center text-primary mb-6 bg-dark-card shadow-md">
-                <FaGraduationCap size={20} />
-              </div>
-              <h3 className="text-lg font-bold font-heading mb-3 text-white">
-                Professional Degrees
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <section>
+              <h3 className="text-lg font-bold font-heading text-white mb-6">
+                Work Experience
               </h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                Licensed architectural planning and drafting services adhering
-                to national design frameworks and standards.
-              </p>
-            </div>
-            <div className="glass-panel p-8 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center text-primary mb-6 bg-dark-card shadow-md">
-                <FaAward size={20} />
+              <div className="space-y-4">
+                <article className="glass-panel p-6 border-l-2 border-primary">
+                  <h4 className="text-white font-bold font-heading">
+                    SAFE BANGLA CITY
+                  </h4>
+                  <p className="text-primary text-sm mt-1">Architect</p>
+                  <p className="text-gray-400 text-sm mt-3">
+                    September 2025 - October 2025
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Dhaka, Bangladesh
+                  </p>
+                </article>
+                <article className="glass-panel p-6 border-l-2 border-primary">
+                  <h4 className="text-white font-bold font-heading">
+                    ACTIVE MIND
+                  </h4>
+                  <p className="text-primary text-sm mt-1">Architect</p>
+                  <p className="text-gray-400 text-sm mt-3">
+                    January 2024 - August 2025
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Dhaka, Bangladesh
+                  </p>
+                </article>
+                <article className="glass-panel p-6 border-l-2 border-primary">
+                  <h4 className="text-white font-bold font-heading">
+                    SAFE ENGINEERING CONSULTANT
+                  </h4>
+                  <p className="text-primary text-sm mt-1">Design Architect</p>
+                  <p className="text-gray-400 text-sm mt-3">
+                    March 2023 - November 2023
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Uttara, Bangladesh
+                  </p>
+                </article>
               </div>
-              <h3 className="text-lg font-bold font-heading mb-3 text-white">
-                Industry Excellence
+            </section>
+
+            <section>
+              <h3 className="text-lg font-bold font-heading text-white mb-6">
+                Education
               </h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                Awarded accolades for 3D walkthrough rendering and innovative
-                commercial spatial layout solutions.
-              </p>
-            </div>
-            <div className="glass-panel p-8 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center text-primary mb-6 bg-dark-card shadow-md">
-                <FaBuilding size={20} />
-              </div>
-              <h3 className="text-lg font-bold font-heading mb-3 text-white">
-                Safety Codes
-              </h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                Engineering designs verified for load bearing limits, structural
-                safety standards, and energy efficient ratings.
-              </p>
-            </div>
+              <article className="glass-panel p-6 border-l-2 border-primary">
+                <div className="w-12 h-12 border border-primary/20 flex items-center justify-center text-primary mb-5 bg-dark-card">
+                  <FaGraduationCap size={20} />
+                </div>
+                <h4 className="text-white font-bold font-heading">
+                  Lakshmipur Polytechnic Institute
+                </h4>
+                <p className="text-primary text-sm font-medium mt-2">
+                  Diploma in Architecture and Interior Technology
+                </p>
+                <p className="text-gray-400 text-sm mt-4">
+                  June 2019 - January 2023
+                </p>
+                <p className="text-gray-500 text-xs mt-1">
+                  Lakshmipur, Bangladesh
+                </p>
+              </article>
+            </section>
           </div>
         </div>
-
         {/* Team Section */}
         <div className="border-t border-dark-border/20 pt-16">
           <div className="text-center mb-16">

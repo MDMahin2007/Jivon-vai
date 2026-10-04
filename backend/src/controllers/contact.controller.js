@@ -1,29 +1,31 @@
 import Contact from "../models/contact.model.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { validateContactInput } from "../utils/contactValidation.js";
 
 dotenv.config();
 
 // 🌟 ১. কন্টাক্ট মেসেজ তৈরি এবং জিমেইলে পাঠানো
 export const createContact = async (req, res) => {
   try {
-    const { name, email, phone, interest, message } = req.body;
+    const input = req.body && typeof req.body === "object" && !Array.isArray(req.body)
+      ? req.body
+      : {};
+    const { name, email, phone, interest, message } = input;
+    const validationError = validateContactInput(input);
 
-    if (!name || name.trim().length < 2) {
-      return res.status(400).json({ success: false, message: "Name must be at least 2 characters." });
-    }
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      return res.status(400).json({ success: false, message: "Please provide a valid email address." });
-    }
-    if (!phone || phone.trim().length < 5) {
-      return res.status(400).json({ success: false, message: "A valid phone number is required." });
-    }
-    if (!message || message.trim().length < 10) {
-      return res.status(400).json({ success: false, message: "Message must be at least 10 characters." });
+    if (validationError) {
+      return res.status(400).json({ success: false, message: validationError });
     }
 
     // ডাটাবেজে সেভ করা
-    const newContact = new Contact({ name: name.trim(), email: email.toLowerCase().trim(), phone: phone.trim(), interest: interest?.trim() || "", message: message.trim() });
+    const newContact = new Contact({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
+      interest: typeof interest === "string" ? interest.trim() : "",
+      message: message.trim(),
+    });
     await newContact.save();
 
     // নোডमেইলার কনফিগারেশন

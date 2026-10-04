@@ -29,7 +29,7 @@ export default function Footer() {
           <ul className="flex flex-col gap-3 text-sm">
             <li>
               <Link
-                to="/"
+                to="/#home"
                 className="hover:text-primary transition-colors duration-300"
               >
                 Menu / Home
@@ -37,7 +37,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                to="/about"
+                to="/#about"
                 className="hover:text-primary transition-colors duration-300"
               >
                 About Us
@@ -53,7 +53,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                to="/services"
+                to="/#services"
                 className="hover:text-primary transition-colors duration-300"
               >
                 Services
@@ -61,7 +61,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                to="/projects"
+                to="/#projects"
                 className="hover:text-primary transition-colors duration-300"
               >
                 Projects
@@ -73,6 +73,14 @@ export default function Footer() {
                 className="hover:text-primary transition-colors duration-300 text-primary/80"
               >
                 Running Project
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/#contact"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                Contact Us
               </Link>
             </li>
           </ul>

@@ -2,21 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --site-background: #e6e8e4;
+  --site-surface: #f4f5f2;
+  --site-ink: #25332c;
+  --site-muted: #59675f;
+  --site-line: #dce4dd;
+  --site-accent: #806118;
+}
+
 @layer base {
   html {
-    background: #050505;
+    background: var(--site-background);
   }
 
   body {
-    @apply bg-dark text-gray-200 font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-dark;
-    background:
-      radial-gradient(circle at 18% 12%, rgba(245, 230, 200, 0.12), transparent 28rem),
-      radial-gradient(circle at 82% 8%, rgba(212, 175, 55, 0.09), transparent 24rem),
-      linear-gradient(135deg, #050505 0%, #0b0c10 42%, #18140e 100%);
+    @apply font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-dark;
+    background: var(--site-background);
+    color: var(--site-ink);
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-white tracking-wide;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading tracking-wide;
+    color: var(--site-ink);
   }
 }
 
@@ -27,13 +40,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0c10;
+  background: var(--site-background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f232d;
+  background: #c4cec6;
   border-radius: 4px;
-  border: 1px solid #d4af37;
+  border: 1px solid var(--site-background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -56,7 +69,11 @@
 }
 
 .premium-navbar {
-  background: linear-gradient(180deg, rgba(8, 8, 8, 0.68), rgba(12, 12, 12, 0.42));
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 8, 0.68),
+    rgba(12, 12, 12, 0.42)
+  );
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   border-bottom: 1px solid rgba(239, 224, 189, 0.13);
@@ -64,7 +81,11 @@
 }
 
 .premium-navbar-scrolled {
-  background: linear-gradient(180deg, rgba(4, 4, 4, 0.91), rgba(11, 10, 8, 0.82));
+  background: linear-gradient(
+    180deg,
+    rgba(4, 4, 4, 0.91),
+    rgba(11, 10, 8, 0.82)
+  );
   border-bottom-color: rgba(239, 224, 189, 0.2);
   box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
 }
@@ -72,47 +93,26 @@
 .site-shell {
   position: relative;
   isolation: isolate;
-  background:
-    radial-gradient(circle at 12% 28%, rgba(239, 224, 189, 0.09), transparent 22rem),
-    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.06), transparent 24rem),
-    radial-gradient(circle at 74% 82%, rgba(212, 175, 55, 0.08), transparent 28rem),
-    linear-gradient(145deg, #050505 0%, #0b0c10 38%, #171717 66%, #0a0907 100%);
+  background: var(--site-background);
+  color: var(--site-ink);
 }
 
-.site-shell::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(239, 224, 189, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(239, 224, 189, 0.04) 1px, transparent 1px),
-    linear-gradient(115deg, transparent 0 48%, rgba(255, 255, 255, 0.025) 49%, transparent 50% 100%);
-  background-size: 72px 72px, 72px 72px, 180px 180px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.45));
-}
-
+.site-shell::before,
 .site-shell::after {
-  content: "";
-  position: fixed;
-  inset: auto auto 8% -8rem;
-  z-index: -1;
-  width: 22rem;
-  height: 22rem;
-  pointer-events: none;
-  border-radius: 9999px;
-  background: rgba(239, 224, 189, 0.13);
-  filter: blur(92px);
+  display: none;
 }
 
 /* Grid overlay background */
 .bg-grid-pattern {
   background-size: 40px 40px;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(239, 224, 189, 0.045) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 80% 10%, rgba(245, 230, 200, 0.08), transparent 24rem);
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(245, 230, 200, 0.08),
+      transparent 24rem
+    );
 }
 
 /* Page Transition Wrapper */
@@ -134,4 +134,95 @@
   box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);
   border-color: rgba(212, 175, 55, 0.5);
   transform: translateY(-2px);
+}
+
+/* Light palette for public pages; the admin area keeps its own theme. */
+.site-shell .bg-dark,
+.site-shell .bg-dark-accent {
+  background-color: var(--site-background) !important;
+}
+
+.site-shell .bg-dark-card {
+  background-color: var(--site-surface) !important;
+}
+
+.site-shell .bg-grid-pattern {
+  background-color: var(--site-background) !important;
+  background-image: none !important;
+}
+
+.site-shell [class*="border-dark-border"] {
+  border-color: var(--site-line) !important;
+}
+
+.site-shell .text-white {
+  color: var(--site-ink) !important;
+}
+
+.site-shell .text-gray-100,
+.site-shell .text-gray-200,
+.site-shell .text-gray-300 {
+  color: #435149 !important;
+}
+
+.site-shell .text-gray-400,
+.site-shell .text-gray-500,
+.site-shell .text-gray-600,
+.site-shell .text-gray-700 {
+  color: var(--site-muted) !important;
+}
+
+.site-shell .text-primary {
+  color: var(--site-accent) !important;
+}
+
+.site-shell .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(37, 51, 44, 0.1);
+  box-shadow: 0 12px 32px rgba(37, 51, 44, 0.06);
+}
+
+.site-shell .premium-navbar,
+.site-shell .premium-navbar-scrolled {
+  background: rgba(230, 232, 228, 0.96);
+  border-bottom-color: var(--site-line);
+  box-shadow: 0 8px 24px rgba(37, 51, 44, 0.08);
+}
+
+.site-shell input:not([type="checkbox"]):not([type="radio"]),
+.site-shell select,
+.site-shell textarea {
+  color-scheme: light;
+  background-color: var(--site-surface) !important;
+  border-color: var(--site-line) !important;
+  color: var(--site-ink) !important;
+}
+
+.site-shell input::placeholder,
+.site-shell textarea::placeholder {
+  color: #7b8980 !important;
+}
+
+.site-shell #home > section:first-child .text-white,
+.site-shell #home > section:first-child .text-gray-300,
+.site-shell #home > section:first-child .text-primary,
+.site-shell #projects .group .text-white,
+.site-shell [class*="bg-black/95"] .text-white,
+.site-shell [class*="bg-black/80"] .text-white,
+.site-shell [class*="bg-black/70"] .text-white,
+.site-shell [class*="bg-dark/60"].text-white {
+  color: #ffffff !important;
+}
+
+.site-shell #home > section:first-child .text-primary,
+.site-shell [class*="bg-dark/80"] .text-primary,
+.site-shell #projects .group .text-primary,
+.site-shell [class*="bg-dark/70"] .text-primary,
+.site-shell [class*="bg-dark/60"].text-primary {
+  color: #f2d36f !important;
+}
+
+.site-shell [class*="bg-black/80"] .text-gray-400,
+.site-shell [class*="bg-black/70"] .text-gray-400 {
+  color: rgba(255, 255, 255, 0.76) !important;
 }

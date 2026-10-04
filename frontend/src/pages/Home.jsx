@@ -219,7 +219,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative scroll-mt-24" id="home">
       {/* Hero Carousel */}
       <section className="relative h-screen w-full overflow-hidden bg-black">
         <AnimatePresence mode="wait">
@@ -280,6 +280,13 @@ export default function Home() {
               >
                 VIEW PROJECTS &rarr;
               </Link>
+
+              <Link
+                to="/contact"
+                className="bg-primary hover:bg-primary-hover text-dark font-heading text-xs tracking-widest font-bold px-8 py-4 rounded-none transition-all duration-300 shadow-lg hover:shadow-primary/20"
+              >
+                CONTACT US &rarr;
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -316,7 +323,10 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section className="py-24 bg-dark relative bg-grid-pattern">
+      <section
+        className="py-24 scroll-mt-24 bg-dark relative bg-grid-pattern"
+        id="about"
+      >
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Images Grid Stack */}
           <div className="relative flex justify-center h-[450px]">
@@ -364,10 +374,10 @@ export default function Home() {
                 READ MORE &rarr;
               </Link>
               <Link
-                to="/about#certifications"
+                to="/running-project"
                 className="bg-dark-card border border-dark-border/40 hover:border-primary text-white font-heading text-xs tracking-widest font-bold px-8 py-4 transition-all duration-300"
               >
-                CERTIFICATIONS
+                RUNNING PROJECTS &rarr;
               </Link>
             </div>
           </div>
@@ -375,7 +385,10 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="py-24 bg-dark-accent border-t border-dark-border/10">
+      <section
+        className="py-24 scroll-mt-24 bg-dark-accent border-t border-dark-border/10"
+        id="services"
+      >
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-primary font-heading text-xs tracking-[0.3em] font-bold mb-3">
             Elevating Spaces with Elegance & Precision From Concept to
@@ -418,10 +431,10 @@ export default function Home() {
 
           <div className="mt-16 flex justify-center gap-4">
             <Link
-              to="/running-project"
+              to="/gallery"
               className="bg-primary hover:bg-primary-hover text-dark font-heading text-xs tracking-widest font-bold px-8 py-4 transition-all duration-300"
             >
-              RUNNING PROJECT
+              OUR GALLERY
             </Link>
             <Link
               to="/contact"
@@ -434,7 +447,7 @@ export default function Home() {
       </section>
 
       {/* Featured Projects Grid */}
-      <section className="py-24 bg-dark">
+      <section className="py-24 scroll-mt-24 bg-dark" id="projects">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
             <div className="text-left">
@@ -496,7 +509,10 @@ export default function Home() {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-24 bg-dark-accent border-t border-dark-border/10">
+      <section
+        className="py-24 scroll-mt-24 bg-dark-accent border-t border-dark-border/10"
+        id="contact"
+      >
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Info and Form Header */}
@@ -543,7 +559,7 @@ export default function Home() {
                     <h4 className="text-xs tracking-wider font-heading font-bold text-white uppercase">
                       Email
                     </h4>
-                    <p className="text-xs">hello@jivonvai.com</p>
+                    <p className="text-xs">arcjibon750@gmail.com</p>
                   </div>
                 </div>
               </div>

@@ -84,7 +84,7 @@ function authHeaders(extra = {}) {
 export default function AdminDashboard() {
   const { section = "dashboard" } = useParams();
   const navigate = useNavigate();
-  const { admin, token, signOut, initialized } = useAuth();
+  const { token, signOut, initialized } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [query, setQuery] = useState("");

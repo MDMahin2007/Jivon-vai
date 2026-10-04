@@ -107,16 +107,15 @@ Protected write operations require a JWT in the `Authorization: Bearer <token>` 
 
 ## Testing and verification
 
-Verified during the latest audit:
+Run the project checks from the repository root:
 
-- Backend starts on an isolated port and connects to MongoDB.
-- Public project API responds with HTTP 200.
-- Unauthenticated project creation is rejected with HTTP 401.
-- Invalid contact input is rejected with HTTP 400.
-- Frontend production build passes with `npm run build`.
-- `git diff --check` passes.
+```bash
+npm --prefix backend test
+npm --prefix frontend run lint
+npm --prefix frontend run build
+```
 
-The backend currently has no implemented test suite (`npm test` is still the existing placeholder), and the frontend lint script references ESLint without an installed configuration. These should be added before a production release. `npm audit` still reports Cloudinary and Nodemailer advisories whose available fixes are breaking upgrades; they require a separate compatibility review.
+Backend tests cover contact input validation. Frontend linting uses ESLint's recommended rules. Configure the backend `.env` from `.env.example` and verify database, mail, and Cloudinary integrations before deployment. Review `npm audit` advisories separately before upgrading major dependencies.
 
 ## Deployment notes
 
