@@ -23,7 +23,7 @@ export default function Home() {
       title: "Structural Elegance",
       subtitle: "FEATURED PROJECT",
       description:
-        "At Jivon Vai Studio, we combine thoughtful structure with visual precision to create inspiring architectural experiences.",
+        "At Arcforma Studio, we combine thoughtful structure with visual precision to create inspiring architectural experiences.",
     },
     {
       image: "/img/project-1/Scene 25_1.png",
@@ -80,11 +80,13 @@ export default function Home() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // 🌟 লোডিং স্টেট যুক্ত করা হয়েছে
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
+    setSubmitError("");
     if (value.trim()) {
       setFormErrors((prev) => ({ ...prev, [name]: false }));
     }
@@ -108,10 +110,6 @@ export default function Home() {
       errors.email = true;
       isValid = false;
     }
-    if (!formValues.interest.trim()) {
-      errors.interest = true;
-      isValid = false;
-    }
     if (!formValues.message.trim()) {
       errors.message = true;
       isValid = false;
@@ -119,6 +117,7 @@ export default function Home() {
 
     if (isValid) {
       setLoading(true); // লোডিং শুরু
+      setSubmitError("");
       try {
         // 🌟 ব্যাকঅ্যান্ড এক্সপ্রেস সার্ভারে হোমপেজের ফর্ম ডেটা পাঠানো হচ্ছে
         const response = await fetch(`${API_BASE_URL}/contact/send-email`, {
@@ -129,9 +128,9 @@ export default function Home() {
           body: JSON.stringify(formValues),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
 
-        if (data.success) {
+        if (response.ok && data?.success) {
           setShowPopup(true); // সাকসেস পপআপ দেখাবে
           setFormValues({
             name: "",
@@ -142,18 +141,22 @@ export default function Home() {
           });
           setFormErrors({});
         } else {
-          alert("সার্ভার এরর: " + (data.message || "ইমেইল পাঠানো যায়নি।"));
+          throw new Error(
+            data?.message ||
+              `Message could not be sent (HTTP ${response.status}).`,
+          );
         }
       } catch (error) {
         console.error("Error sending home contact form:", error);
-        alert(
-          "ব্যাকঅ্যান্ড সার্ভারের সাথে কানেক্ট করা যাচ্ছে না। নিশ্চিত করুন আপনার ব্যাকঅ্যান্ড পোর্ট ৫০00-এ চালু আছে।",
+        setSubmitError(
+          error.message || "Message could not be sent. Please try again later.",
         );
       } finally {
         setLoading(false); // লোডিং শেষ
       }
     } else {
       setFormErrors(errors);
+      setSubmitError("Please complete your name, phone, email, and message.");
     }
   };
 
@@ -271,17 +274,17 @@ export default function Home() {
           <div className="relative flex justify-center h-[450px]">
             <img
               src="/img/project-3/Scene 7_1.png"
-              alt="Jivon Vai residential concept"
+              alt="Arcforma Studio residential concept"
               className="absolute left-0 bottom-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-20"
             />
             <img
               src="/img/project-5/Scene 2(1).png"
-              alt="Jivon Vai interior design concept"
+              alt="Arcforma Studio interior design concept"
               className="absolute right-4 top-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-10"
             />
             <img
               src="/img/project-11/1 (2).png"
-              alt="Jivon Vai exterior façade concept"
+              alt="Arcforma Studio exterior facade concept"
               className="absolute left-[15%] top-[25%] w-1/2 h-1/2 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-30"
             />
           </div>
@@ -292,16 +295,16 @@ export default function Home() {
               ABOUT US
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-6 tracking-wide text-white">
-              Jivon Vai Studio
+              Arcforma Studio
             </h2>
             <p className="text-gray-400 font-sans leading-relaxed mb-6 text-sm sm:text-base">
-              Welcome to <strong>Jivon Vai Studio</strong>. We are a dedicated
+              Welcome to <strong>Arcforma Studio</strong>. We are a dedicated
               architectural and interior design practice focused on thoughtful
               planning, premium detailing, and confident execution from concept
               to completion.
             </p>
             <p className="text-gray-400 font-sans leading-relaxed mb-8 text-sm sm:text-base">
-              At Jivon Vai Studio, we believe in precision, creativity, and a
+              At Arcforma Studio, we believe in precision, creativity, and a
               human-centered design process. Our team turns ideas into spaces
               that are elegant, practical, and built to last.
             </p>
@@ -514,7 +517,7 @@ export default function Home() {
                   value={formValues.name}
                   onChange={handleInputChange}
                   placeholder="Name"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.name
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -528,7 +531,7 @@ export default function Home() {
                   value={formValues.phone}
                   onChange={handleInputChange}
                   placeholder="Phone Number*"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.phone
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -540,7 +543,7 @@ export default function Home() {
                   value={formValues.email}
                   onChange={handleInputChange}
                   placeholder="Email*"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.email
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -554,7 +557,7 @@ export default function Home() {
                   value={formValues.interest}
                   onChange={handleInputChange}
                   placeholder="Interested in"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.interest
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -568,7 +571,7 @@ export default function Home() {
                   onChange={handleInputChange}
                   placeholder="Message*"
                   rows="4"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.message
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -577,6 +580,12 @@ export default function Home() {
               </div>
 
               {/* 🌟 সাবমিট বাটন লোডিংসহ আপডেট করা হয়েছে */}
+              {submitError && (
+                <p className="text-sm text-red-700" role="alert">
+                  {submitError}
+                </p>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}

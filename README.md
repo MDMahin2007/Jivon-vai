@@ -36,7 +36,7 @@ Backend
    `cd backend`
 2. Install dependencies:
    `npm install`
-4. Create a `.env` file based on the project template values, including:
+3. Create a `.env` file based on the project template values, including:
    - `PORT=5000`
    - `FRONTEND_URL=https://jivon-vai-five.vercel.app`
    - `EMAIL_USER=your_email`

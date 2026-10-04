@@ -14,6 +14,8 @@
 @layer base {
   html {
     background: var(--site-background);
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
   }
 
   body {
@@ -146,6 +148,11 @@
   background-color: var(--site-surface) !important;
 }
 
+.site-shell [class*="bg-[#090909]"] {
+  background-color: var(--site-surface) !important;
+  border-color: var(--site-line);
+}
+
 .site-shell .bg-grid-pattern {
   background-color: var(--site-background) !important;
   background-image: none !important;
@@ -179,6 +186,7 @@
 .site-shell .glass-panel {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(37, 51, 44, 0.1);
+  border-radius: 4px;
   box-shadow: 0 12px 32px rgba(37, 51, 44, 0.06);
 }
 
@@ -195,12 +203,48 @@
   color-scheme: light;
   background-color: var(--site-surface) !important;
   border-color: var(--site-line) !important;
-  color: var(--site-ink) !important;
+  color: #000000 !important;
+  caret-color: #000000;
 }
 
 .site-shell input::placeholder,
 .site-shell textarea::placeholder {
   color: #7b8980 !important;
+}
+
+.site-shell .contact-form-field {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+.site-shell .contact-form-field::placeholder {
+  color: #7b8980 !important;
+  -webkit-text-fill-color: #7b8980 !important;
+  opacity: 1;
+}
+
+.site-shell :is(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid rgba(128, 97, 24, 0.45);
+  outline-offset: 3px;
+}
+
+.site-shell button:not(:disabled),
+.site-shell a[class*="px-"][class*="py-"] {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.site-shell button:not(:disabled):hover,
+.site-shell a[class*="bg-primary"]:hover {
+  transform: translateY(-1px);
+}
+
+.site-shell button:disabled {
+  cursor: wait;
 }
 
 .site-shell #home > section:first-child .text-white,
@@ -225,4 +269,19 @@
 .site-shell [class*="bg-black/80"] .text-gray-400,
 .site-shell [class*="bg-black/70"] .text-gray-400 {
   color: rgba(255, 255, 255, 0.76) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .site-shell *,
+  .site-shell *::before,
+  .site-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

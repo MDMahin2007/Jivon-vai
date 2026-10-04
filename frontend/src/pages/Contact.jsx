@@ -13,11 +13,13 @@ export default function Contact() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // লোডিং স্টেট
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
+    setSubmitError("");
     if (value.trim()) {
       setFormErrors((prev) => ({ ...prev, [name]: false }));
     }
@@ -41,10 +43,6 @@ export default function Contact() {
       errors.email = true;
       isValid = false;
     }
-    if (!formValues.interest.trim()) {
-      errors.interest = true;
-      isValid = false;
-    }
     if (!formValues.message.trim()) {
       errors.message = true;
       isValid = false;
@@ -52,6 +50,7 @@ export default function Contact() {
 
     if (isValid) {
       setLoading(true); // লোডিং শুরু
+      setSubmitError("");
       try {
         // 🌟 আপনার ব্যাকঅ্যান্ড এক্সপ্রেস সার্ভারে ফর্ম ডেটা পাঠানো হচ্ছে
         const response = await fetch(`${API_BASE_URL}/contact/send-email`, {
@@ -62,9 +61,9 @@ export default function Contact() {
           body: JSON.stringify(formValues),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
 
-        if (data.success) {
+        if (response.ok && data?.success) {
           setShowPopup(true); // মেইল সফলভাবে গেলে পপআপ দেখাবে
           setFormValues({
             name: "",
@@ -75,18 +74,22 @@ export default function Contact() {
           });
           setFormErrors({});
         } else {
-          alert("সার্ভার এরর: " + (data.message || "ইমেইল পাঠানো যায়নি।"));
+          throw new Error(
+            data?.message ||
+              `Message could not be sent (HTTP ${response.status}).`,
+          );
         }
       } catch (error) {
         console.error("Error connecting to backend:", error);
-        alert(
-          "ব্যাকঅ্যান্ড সার্ভারের সাথে কানেক্ট করা যাচ্ছে না। নিশ্চিত করুন npm run dev দিয়ে ব্যাকঅ্যান্ড চালু রেখেছেন।",
+        setSubmitError(
+          error.message || "Message could not be sent. Please try again later.",
         );
       } finally {
         setLoading(false); // লোডিং শেষ
       }
     } else {
       setFormErrors(errors);
+      setSubmitError("Please complete your name, phone, email, and message.");
     }
   };
 
@@ -192,7 +195,7 @@ export default function Contact() {
                   value={formValues.name}
                   onChange={handleInputChange}
                   placeholder="Name"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.name
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -206,7 +209,7 @@ export default function Contact() {
                   value={formValues.phone}
                   onChange={handleInputChange}
                   placeholder="Phone Number*"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.phone
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -218,7 +221,7 @@ export default function Contact() {
                   value={formValues.email}
                   onChange={handleInputChange}
                   placeholder="Email*"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.email
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -232,7 +235,7 @@ export default function Contact() {
                   value={formValues.interest}
                   onChange={handleInputChange}
                   placeholder="Interested in"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.interest
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -246,7 +249,7 @@ export default function Contact() {
                   onChange={handleInputChange}
                   placeholder="Message*"
                   rows="5"
-                  className={`w-full bg-dark/60 text-white border ${
+                  className={`w-full bg-dark/60 contact-form-field border ${
                     formErrors.message
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
@@ -254,7 +257,12 @@ export default function Contact() {
                 />
               </div>
 
-              {/* সাবমিট বাটন লোডিংসহ */}
+              {submitError && (
+                <p className="text-sm text-red-700" role="alert">
+                  {submitError}
+                </p>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}

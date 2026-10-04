@@ -24,7 +24,7 @@ export default function Navbar() {
     setIsOpen(false);
   }, [location]);
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen((open) => !open);
 
   const menuItems = [
     { label: "MENU", path: "/#home" },
@@ -50,14 +50,20 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center shrink-0"
-          aria-label="Jivon Vai Home"
+          className="flex items-center gap-3 shrink-0"
+          aria-label="Arcforma Studio Home"
         >
           <img
             src="/img/logo.png"
-            alt="Jivon Vai Logo"
-            className="h-14 w-14 sm:h-16 sm:w-16 rounded-full object-cover border border-[#efe0bd]/70 shadow-[0_12px_35px_rgba(0,0,0,0.35),0_0_22px_rgba(239,224,189,0.18)] transition-transform duration-300 hover:scale-105"
+            alt="Arcforma Studio Logo"
+            className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-full object-cover border border-primary/40 shadow-[0_8px_24px_rgba(37,51,44,0.16)] transition-transform duration-300 hover:scale-105"
           />
+          <span className="flex flex-col font-heading font-bold leading-tight text-[#25332c]">
+            <span className="text-base sm:text-lg">Arcforma</span>
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.24em] text-primary">
+              Studio
+            </span>
+          </span>
         </Link>
 
         {/* Desktop Menu */}
@@ -83,6 +89,8 @@ export default function Navbar() {
           onClick={toggleMenu}
           className="md:hidden text-white focus:outline-none hover:text-primary transition-colors duration-300"
           aria-label="Toggle menu"
+          aria-expanded={isOpen}
+          aria-controls="mobile-navigation"
         >
           {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
@@ -90,7 +98,10 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="md:hidden fixed top-[82px] left-0 w-full bg-[#090909]/90 border-b border-[#efe0bd]/15 backdrop-blur-xl shadow-2xl transition-all duration-300 ease-in-out z-40">
+        <div
+          id="mobile-navigation"
+          className="md:hidden absolute inset-x-0 top-full w-full bg-[#090909]/90 border-b border-[#efe0bd]/15 backdrop-blur-xl shadow-2xl transition-all duration-300 ease-in-out z-40"
+        >
           <ul className="flex flex-col py-6 px-6 gap-4">
             {menuItems.map((item) => (
               <li key={item.label}>

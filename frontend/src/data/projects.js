@@ -283,7 +283,7 @@ export const servicesData = [
 
 export const teamData = [
   {
-    name: "Jivon Vai",
+    name: "Arman Hosen Jibon",
     role: "Founder & Principal Architect",
     image: "/img/jibon.jpg"
   }

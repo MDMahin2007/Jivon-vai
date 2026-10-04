@@ -9,12 +9,23 @@ const app = express();
 const frontendOrigin = new URL(
   process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app",
 ).origin;
+const allowedOrigins = new Set([
+  frontendOrigin,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
 
 app.set("trust proxy", 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: frontendOrigin,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin not allowed by CORS."));
+    },
     credentials: true,
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],

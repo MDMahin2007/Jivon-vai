@@ -36,6 +36,40 @@ test("keeps portfolio data APIs out of the contact-only backend", async () => {
     assert.equal(body.message, "API route not found.");
 });
 
+test("allows the local Vite frontend to submit contact messages", async () => {
+    const response = await fetch(`${baseUrl}/api/contact/send-email`, {
+        method: "OPTIONS",
+        headers: {
+            Origin: "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    });
+
+    assert.equal(response.status, 204);
+    assert.equal(
+        response.headers.get("access-control-allow-origin"),
+        "http://localhost:5173",
+    );
+});
+
+test("continues to allow the deployed Vercel frontend", async () => {
+    const response = await fetch(`${baseUrl}/api/contact/send-email`, {
+        method: "OPTIONS",
+        headers: {
+            Origin: "https://jivon-vai-five.vercel.app",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    });
+
+    assert.equal(response.status, 204);
+    assert.equal(
+        response.headers.get("access-control-allow-origin"),
+        "https://jivon-vai-five.vercel.app",
+    );
+});
+
 test("validates contact messages before trying to send email", async () => {
     const response = await fetch(`${baseUrl}/api/contact/send-email`, {
         method: "POST",
