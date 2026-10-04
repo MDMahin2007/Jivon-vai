@@ -159,7 +159,7 @@ export default function Contact() {
                     Email
                   </h4>
                   <p className="text-[11px] text-gray-400 leading-snug break-all">
-                    hello@jivonvai.com
+                    arcjibon750@gmail.com
                   </p>
                 </div>
               </div>
