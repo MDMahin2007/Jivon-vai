@@ -20,8 +20,9 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-const frontendUrl =
-    process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app";
+const frontendUrl = new URL(
+    process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app",
+).origin;
 const frontendDistPath = path.resolve(__dirname, "../frontend/dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
 
