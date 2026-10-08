@@ -100,7 +100,7 @@ test("validates contact messages before trying to send email", async () => {
     assert.equal(body.message, "Name must be at least 2 characters.");
 });
 
-test("confirms a saved contact without waiting for the email provider", async () => {
+test("reports email delivery failures while keeping the saved contact", async () => {
     let savedContact;
     let resolveNotification;
     const pendingNotification = new Promise((resolve) => {
@@ -122,9 +122,13 @@ test("confirms a saved contact without waiting for the email provider", async ()
         saveMessage: async (contact) => {
             savedContact = contact;
         },
-        notifyByEmail: () => pendingNotification,
+        notifyByEmail: async () => {
+            resolveNotification();
+            await pendingNotification;
+            throw new Error("Provider unavailable");
+        },
         hasEmailCredentials: () => true,
-        logger: { error: assert.fail },
+        logger: { error() {} },
     });
 
     await handler(
@@ -142,9 +146,8 @@ test("confirms a saved contact without waiting for the email provider", async ()
     assert.equal(savedContact.email, "arman@example.com");
     assert.equal(response.statusCode, 201);
     assert.equal(response.body.success, true);
-    assert.equal(response.body.emailNotification, "sending");
+    assert.equal(response.body.emailNotification, "failed");
 
-    resolveNotification();
     await pendingNotification;
 });
 

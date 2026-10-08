@@ -1,12 +1,11 @@
 import { validateContactInput } from "../utils/contactValidation.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { isEmailConfigured } from "../utils/sendEmail.js";
 import { saveContactMessage } from "../config/database.js";
 
 export function createContactHandler({
   saveMessage = saveContactMessage,
   notifyByEmail = sendEmail,
-  hasEmailCredentials = () =>
-    Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+  hasEmailCredentials = isEmailConfigured,
   logger = console,
 } = {}) {
   return async (req, res) => {
@@ -39,18 +38,16 @@ export function createContactHandler({
     }
 
     const emailConfigured = hasEmailCredentials();
+    let emailNotification = emailConfigured ? "failed" : "not_configured";
 
     if (!emailConfigured) {
       logger.error(
-        "CRITICAL: EMAIL_USER or EMAIL_PASS environment variables are missing on Render Server!"
+        "Contact message saved, but email provider configuration is missing or invalid.",
       );
-    }
-
-    // 2. Immediate Email Call with Await (Fail hole precise console log dibe)
-    if (emailConfigured) {
+    } else {
       try {
         await notifyByEmail(contactData);
-        logger.log("Email sent successfully to recipient.");
+        emailNotification = "sent";
       } catch (error) {
         logger.error("Unable to send contact email:", error.message);
       }
@@ -58,35 +55,10 @@ export function createContactHandler({
 
     return res.status(201).json({
       success: true,
-      emailNotification: emailConfigured ? "sent" : "not_configured",
+      emailNotification,
       message: "Your message has been saved successfully.",
     });
   };
 }
 
 export const createContact = createContactHandler();
-
-
-// const emailConfigured = hasEmailCredentials();
-//     if (!emailConfigured) {
-//       logger.error(
-//         "Contact message saved, but email notification is not configured.",
-//       );
-//     }
-//     res.status(201).json({
-//       success: true,
-//       emailNotification: emailConfigured ? "sending" : "not_configured",
-//       message: "Your message has been saved successfully.",
-//     });
-
-//     if (emailConfigured) {
-//       void Promise.resolve()
-//         .then(() => notifyByEmail(contactData))
-//         .catch((error) => {
-//           logger.error("Unable to send contact email:", error.message);
-//         });
-//     }
-//   };
-// }
-
-// export const createContact = createContactHandler();

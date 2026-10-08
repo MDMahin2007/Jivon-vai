@@ -132,7 +132,7 @@ export default function Home() {
         const data = await response.json().catch(() => null);
 
         if (response.ok && data?.success) {
-          setEmailWarning(data.emailNotification === "not_configured");
+          setEmailWarning(data.emailNotification !== "sent");
           setShowPopup(true);
           setFormValues({
             name: "",
@@ -623,7 +623,7 @@ export default function Home() {
               </h3>
               <p className="text-black text-sm leading-relaxed mb-6">
                 {emailWarning
-                  ? "Your message was saved, but email notifications are not configured on the server. Please contact the site owner."
+                  ? "Your message was saved, but the email notification could not be sent. Please contact us directly."
                   : "Your message has been saved successfully."}
                 <br />
                 {!emailWarning && "We will contact you soon."}

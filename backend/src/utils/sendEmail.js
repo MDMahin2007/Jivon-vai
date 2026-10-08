@@ -1,40 +1,95 @@
 import nodemailer from "nodemailer";
 
-let transporter;
+const RESEND_API_URL = "https://api.resend.com/emails";
 
-const getTransporter = () => {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      pool: true,
-      maxConnections: 1,
-      maxMessages: 100,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+function getProvider(env) {
+  return (env.EMAIL_PROVIDER || (env.RESEND_API_KEY ? "resend" : "gmail"))
+    .trim()
+    .toLowerCase();
+}
+
+export function isEmailConfigured(env = process.env) {
+  const provider = getProvider(env);
+
+  if (provider === "resend") {
+    return Boolean(env.RESEND_API_KEY && env.EMAIL_FROM);
   }
 
-  return transporter;
-};
+  if (provider === "gmail") {
+    return Boolean(env.EMAIL_USER && env.EMAIL_PASS);
+  }
 
-const sendEmail = async (contactData) => {
-  await getTransporter().sendMail({
-    from: process.env.EMAIL_USER,
-    replyTo: contactData.email,
-    to: process.env.CONTACT_RECIPIENT || "arcjibon750@gmail.com",
-    subject: "New Contact Form Message",
-    text: `
-Name: ${contactData.name}
+  return false;
+}
+
+export function createEmailSender({
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  createTransport = nodemailer.createTransport,
+} = {}) {
+  let transporter;
+
+  return async (contactData) => {
+    if (!isEmailConfigured(env)) {
+      throw new Error(`Email provider "${getProvider(env)}" is not configured.`);
+    }
+
+    const recipient = env.CONTACT_RECIPIENT || "arcjibon750@gmail.com";
+    const text = `Name: ${contactData.name}
 Email: ${contactData.email}
 Phone: ${contactData.phone}
 Interest: ${contactData.interest}
 
 Message:
-${contactData.message}
-`,
-  });
-};
+${contactData.message}`;
+
+    if (getProvider(env) === "resend") {
+      const response = await fetchImpl(RESEND_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: env.EMAIL_FROM,
+          to: [recipient],
+          reply_to: contactData.email,
+          subject: "New Contact Form Message",
+          text,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Resend API returned HTTP ${response.status}.`);
+      }
+
+      return;
+    }
+
+    if (!transporter) {
+      transporter = createTransport({
+        service: "gmail",
+        pool: true,
+        maxConnections: 1,
+        maxMessages: 100,
+        auth: {
+          user: env.EMAIL_USER,
+          pass: env.EMAIL_PASS,
+        },
+      });
+    }
+
+    await transporter.sendMail({
+      from: env.EMAIL_USER,
+      replyTo: contactData.email,
+      to: recipient,
+      subject: "New Contact Form Message",
+      text,
+    });
+  };
+}
+
+const sendEmail = createEmailSender();
 
 export default sendEmail;

@@ -41,9 +41,8 @@ Backend
    - `FRONTEND_URL=https://jivon-vai-five.vercel.app`
    - `MONGODB_DB_NAME=ArcformaStudio`
    - `MONGODB_URI` with your MongoDB connection string
-   - `EMAIL_USER=your_email`
-   - `EMAIL_PASS=your_email_password`
    - `CONTACT_RECIPIENT=your_email`
+   - Local only: `EMAIL_PROVIDER=gmail`, `EMAIL_USER=your_email`, and `EMAIL_PASS=your_gmail_app_password`
 4. Start the server:
    `npm run dev` or `npm start`
 
@@ -60,7 +59,7 @@ Backend
 
    For a production frontend build, set `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api` in the deployment environment. Vite embeds this value into the frontend build.
 
-5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. In the Render backend environment, set `MONGODB_DB_NAME`, `MONGODB_URI`, `EMAIL_USER`, `EMAIL_PASS` (a Gmail App Password), `CONTACT_RECIPIENT`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app`. Redeploy the backend after changing environment variables. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
+5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. Render Free blocks outbound SMTP ports, so configure an HTTPS email provider for production: verify a sender domain in Resend, then set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` (an address on the verified domain), and `CONTACT_RECIPIENT` in the Render backend environment. Keep Gmail SMTP (`EMAIL_PROVIDER=gmail`, `EMAIL_USER`, and `EMAIL_PASS` as a Gmail App Password) for local development. Set `MONGODB_DB_NAME`, `MONGODB_URI`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app` as well, then redeploy the backend. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
 
 ## Production build
 
@@ -106,8 +105,8 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-Backend tests cover contact input validation. Frontend linting uses ESLint's recommended rules. Configure the backend `.env` from `.env.example` and verify SMTP delivery before deployment.
+Backend tests cover contact validation and both Resend API and local Gmail SMTP delivery paths. Frontend linting uses ESLint's recommended rules.
 
 ## Deployment notes
 
-Before deployment, configure production values for `FRONTEND_URL`, `EMAIL_USER`, `EMAIL_PASS`, and `CONTACT_RECIPIENT`. Verify SMTP delivery and the production frontend origin manually. Do not deploy the local `.env` file.
+Before deployment, configure production values for `FRONTEND_URL`, `MONGODB_URI`, `MONGODB_DB_NAME`, `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM`, and `CONTACT_RECIPIENT`. Verify the Resend sender domain and production frontend origin. Do not deploy the local `.env` file.
