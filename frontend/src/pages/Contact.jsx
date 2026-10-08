@@ -297,7 +297,7 @@ export default function Contact() {
                 Thank You!
               </h3>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                Your message has been sent successfully.
+                Your message has been saved successfully.
                 <br />
                 We will contact you soon.
               </p>

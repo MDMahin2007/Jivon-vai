@@ -6,33 +6,35 @@ import contactRoutes from "./src/routes/contact.routes.js";
 import errorMiddleware from "./src/middleware/error.middleware.js";
 
 const app = express();
-const frontendOrigin = new URL(
-  process.env.FRONTEND_URL || "https://jivon-vai-five.vercel.app",
-).origin;
-const allowedOrigins = new Set([
-  frontendOrigin,
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "https://jivon-vai-five.vercel.app",
-  "https://jivon-vai.vercel.app",
-]);
 
 app.set("trust proxy", 1);
 app.use(helmet());
+
+// Dynamic CORS configuration (Vercel preview & main domains allow korbe)
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.has(origin)) {
+      // Postman / Mobile / No origin request
+      if (!origin) return callback(null, true);
+
+      // Main domain or ANY Vercel preview domain (.vercel.app) or Localhost allow
+      if (
+        origin.endsWith(".vercel.app") ||
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1")
+      ) {
         return callback(null, true);
       }
 
-      return callback(new Error("Origin not allowed by CORS."));
+      // Silent rejection (Exception throw na kore app safe rakha)
+      return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
-  }),
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
+
 app.use(express.json({ limit: "20kb" }));
 
 app.get("/", (_req, res) => {

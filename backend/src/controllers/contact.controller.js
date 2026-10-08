@@ -1,5 +1,6 @@
 import { validateContactInput } from "../utils/contactValidation.js";
 import sendEmail from "../utils/sendEmail.js";
+import { saveContactMessage } from "../config/database.js";
 
 export const createContact = async (req, res) => {
   const input =
@@ -12,31 +13,46 @@ export const createContact = async (req, res) => {
     return res.status(400).json({ success: false, message: validationError });
   }
 
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  const contactData = {
+    name: input.name.trim(),
+    email: input.email.trim().toLowerCase(),
+    phone: input.phone.trim(),
+    interest: typeof input.interest === "string" ? input.interest.trim() : "",
+    message: input.message.trim(),
+  };
+
+  try {
+    await saveContactMessage(contactData);
+  } catch (error) {
+    console.error("Unable to save contact message:", error.message);
     return res.status(503).json({
       success: false,
-      message: "Contact email is not configured on the server.",
+      message: "Unable to save your message right now. Please try again later.",
+    });
+  }
+
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    return res.status(201).json({
+      success: true,
+      emailSent: false,
+      message: "Your message has been saved successfully.",
     });
   }
 
   try {
-    await sendEmail({
-      name: input.name.trim(),
-      email: input.email.trim().toLowerCase(),
-      phone: input.phone.trim(),
-      interest: typeof input.interest === "string" ? input.interest.trim() : "",
-      message: input.message.trim(),
-    });
+    await sendEmail(contactData);
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Your message has been sent successfully.",
+      emailSent: true,
+      message: "Your message has been saved successfully.",
     });
   } catch (error) {
     console.error("Unable to send contact email:", error.message);
-    return res.status(502).json({
-      success: false,
-      message: "Unable to send your message right now. Please try again later.",
+    return res.status(201).json({
+      success: true,
+      emailSent: false,
+      message: "Your message has been saved successfully.",
     });
   }
 };

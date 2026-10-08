@@ -39,6 +39,8 @@ Backend
 3. Create a `.env` file based on the project template values, including:
    - `PORT=5000`
    - `FRONTEND_URL=https://jivon-vai-five.vercel.app`
+   - `MONGODB_DB_NAME=ArcformaStudio`
+   - `MONGODB_URI` with your MongoDB connection string
    - `EMAIL_USER=your_email`
    - `EMAIL_PASS=your_email_password`
    - `CONTACT_RECIPIENT=your_email`
@@ -58,7 +60,7 @@ Backend
 
    For a production frontend build, set `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api` in the deployment environment. Vite embeds this value into the frontend build.
 
-5. In the Render backend environment, set `FRONTEND_URL=https://jivon-vai-five.vercel.app` so the deployed frontend can access the API through CORS. For local development, set it to `http://localhost:5173` in `backend/.env`.
+5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. Set `MONGODB_DB_NAME` and `MONGODB_URI` in the Render backend environment. Set `FRONTEND_URL=https://jivon-vai-five.vercel.app` so the deployed frontend can access the API through CORS. For local development, set it to `http://localhost:5173` in `backend/.env`.
 
 ## Production build
 
@@ -77,8 +79,7 @@ npm run build
 ## Notes
 
 - Projects, services, and images are served from the frontend's local data and `public/img` assets.
-- The backend only validates contact form submissions and emails them to `CONTACT_RECIPIENT`.
-- Contact messages are not stored in a database.
+- The backend validates and stores contact form submissions in MongoDB, and emails them to `CONTACT_RECIPIENT` when email credentials are configured.
 
 ## Architecture
 
