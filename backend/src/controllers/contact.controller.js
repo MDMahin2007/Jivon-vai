@@ -39,25 +39,54 @@ export function createContactHandler({
     }
 
     const emailConfigured = hasEmailCredentials();
+
     if (!emailConfigured) {
       logger.error(
-        "Contact message saved, but email notification is not configured.",
+        "CRITICAL: EMAIL_USER or EMAIL_PASS environment variables are missing on Render Server!"
       );
     }
-    res.status(201).json({
+
+    // 2. Immediate Email Call with Await (Fail hole precise console log dibe)
+    if (emailConfigured) {
+      try {
+        await notifyByEmail(contactData);
+        logger.log("Email sent successfully to recipient.");
+      } catch (error) {
+        logger.error("Unable to send contact email:", error.message);
+      }
+    }
+
+    return res.status(201).json({
       success: true,
-      emailNotification: emailConfigured ? "sending" : "not_configured",
+      emailNotification: emailConfigured ? "sent" : "not_configured",
       message: "Your message has been saved successfully.",
     });
-
-    if (emailConfigured) {
-      void Promise.resolve()
-        .then(() => notifyByEmail(contactData))
-        .catch((error) => {
-          logger.error("Unable to send contact email:", error.message);
-        });
-    }
   };
 }
 
 export const createContact = createContactHandler();
+
+
+// const emailConfigured = hasEmailCredentials();
+//     if (!emailConfigured) {
+//       logger.error(
+//         "Contact message saved, but email notification is not configured.",
+//       );
+//     }
+//     res.status(201).json({
+//       success: true,
+//       emailNotification: emailConfigured ? "sending" : "not_configured",
+//       message: "Your message has been saved successfully.",
+//     });
+
+//     if (emailConfigured) {
+//       void Promise.resolve()
+//         .then(() => notifyByEmail(contactData))
+//         .catch((error) => {
+//           logger.error("Unable to send contact email:", error.message);
+//         });
+//     }
+//   };
+// }
+
+// export const createContact = createContactHandler();
