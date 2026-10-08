@@ -1,15 +1,26 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async (contactData) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+let transporter;
 
-  await transporter.sendMail({
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 100,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  }
+
+  return transporter;
+};
+
+const sendEmail = async (contactData) => {
+  await getTransporter().sendMail({
     from: process.env.EMAIL_USER,
     replyTo: contactData.email,
     to: process.env.CONTACT_RECIPIENT || "arcjibon750@gmail.com",

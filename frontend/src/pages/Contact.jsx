@@ -268,7 +268,7 @@ export default function Contact() {
                 disabled={loading}
                 className="bg-primary hover:bg-primary-hover text-dark font-heading text-xs tracking-widest font-bold py-4 transition-all duration-300 shadow-md disabled:opacity-50"
               >
-                {loading ? "SENDING..." : "SUBMIT →"}
+                {loading ? "SAVING..." : "SUBMIT →"}
               </button>
             </form>
           </div>
@@ -293,10 +293,10 @@ export default function Contact() {
               <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary mb-6">
                 <FaCheck size={24} />
               </div>
-              <h3 className="text-2xl font-bold font-heading text-white mb-2">
+              <h3 className="text-2xl font-bold font-heading text-black mb-2">
                 Thank You!
               </h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              <p className="text-black text-sm leading-relaxed mb-6">
                 Your message has been saved successfully.
                 <br />
                 We will contact you soon.

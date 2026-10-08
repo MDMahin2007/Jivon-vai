@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import test, { after, before } from "node:test";
 import app from "../app.js";
+import { createContactHandler } from "../src/controllers/contact.controller.js";
 
 let server;
 let baseUrl;
@@ -97,4 +98,52 @@ test("validates contact messages before trying to send email", async () => {
 
     assert.equal(response.status, 400);
     assert.equal(body.message, "Name must be at least 2 characters.");
+});
+
+test("confirms a saved contact without waiting for the email provider", async () => {
+    let savedContact;
+    let resolveNotification;
+    const pendingNotification = new Promise((resolve) => {
+        resolveNotification = resolve;
+    });
+    const response = {
+        statusCode: null,
+        body: null,
+        status(statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        },
+        json(body) {
+            this.body = body;
+            return this;
+        },
+    };
+    const handler = createContactHandler({
+        saveMessage: async (contact) => {
+            savedContact = contact;
+        },
+        notifyByEmail: () => pendingNotification,
+        hasEmailCredentials: () => true,
+        logger: { error: assert.fail },
+    });
+
+    await handler(
+        {
+            body: {
+                name: "Arman Hosen",
+                email: "arman@example.com",
+                phone: "+8801882111979",
+                message: "I would like to discuss a design project.",
+            },
+        },
+        response,
+    );
+
+    assert.equal(savedContact.email, "arman@example.com");
+    assert.equal(response.statusCode, 201);
+    assert.equal(response.body.success, true);
+    assert.equal(response.body.emailNotification, "sending");
+
+    resolveNotification();
+    await pendingNotification;
 });
