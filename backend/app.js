@@ -10,29 +10,30 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-// Dynamic CORS configuration (Vercel preview & main domains allow korbe)
+const frontendOrigin = process.env.FRONTEND_URL
+  ? new URL(process.env.FRONTEND_URL).origin
+  : "https://jivon-vai-five.vercel.app";
+const allowedOrigins = new Set([
+  frontendOrigin,
+  "https://jivon-vai-five.vercel.app",
+  "https://jivon-vai.vercel.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Postman / Mobile / No origin request
-      if (!origin) return callback(null, true);
-
-      // Main domain or ANY Vercel preview domain (.vercel.app) or Localhost allow
-      if (
-        origin.endsWith(".vercel.app") ||
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1")
-      ) {
+      if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
 
-      // Silent rejection (Exception throw na kore app safe rakha)
       return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "20kb" }));

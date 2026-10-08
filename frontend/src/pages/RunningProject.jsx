@@ -17,8 +17,10 @@ export default function RunningProject() {
         {/* Main Cover Blueprint */}
         <div className="bg-dark-card border border-dark-border/40 overflow-hidden mb-12 shadow-2xl">
           <img 
-            src="/img/project-9/zi bablu floor plan 2.png" 
+            src="/projects/project-9/zi bablu floor plan 2.webp"
             alt="Running Project Cover Office Layout" 
+            fetchPriority="high"
+            decoding="async"
             className="w-full h-auto object-cover max-h-[500px]"
           />
         </div>
@@ -28,8 +30,10 @@ export default function RunningProject() {
           {/* Sub Image */}
           <div className="bg-dark-card border border-dark-border/40 overflow-hidden shadow-xl">
             <img 
-              src="/img/project-9/zi bablu floor plan.png" 
+              src="/projects/project-9/zi bablu floor plan.webp"
               alt="Conference Room Layout Blueprint" 
+              loading="lazy"
+              decoding="async"
               className="w-full h-auto object-cover"
             />
           </div>
@@ -51,8 +55,10 @@ export default function RunningProject() {
         {/* Bottom Detailed Blueprint */}
         <div className="bg-dark-card border border-dark-border/40 overflow-hidden shadow-2xl">
           <img 
-            src="/img/project-9/zi bablu floor plan 1.png" 
+            src="/projects/project-9/zi bablu floor plan 1.webp"
             alt="Office Blueprint Details" 
+            loading="lazy"
+            decoding="async"
             className="w-full h-auto object-cover"
           />
         </div>

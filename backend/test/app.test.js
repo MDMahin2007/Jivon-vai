@@ -88,6 +88,24 @@ test("allows the jivon-vai Vercel frontend alias", async () => {
     );
 });
 
+test("does not grant CORS access to unrelated or deceptive origins", async () => {
+    for (const origin of [
+        "https://unrelated-project.vercel.app",
+        "http://localhost.attacker.example",
+    ]) {
+        const response = await fetch(`${baseUrl}/api/contact/send-email`, {
+            method: "OPTIONS",
+            headers: {
+                Origin: origin,
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        });
+
+        assert.equal(response.headers.get("access-control-allow-origin"), null);
+    }
+});
+
 test("validates contact messages before trying to send email", async () => {
     const response = await fetch(`${baseUrl}/api/contact/send-email`, {
         method: "POST",
@@ -100,11 +118,15 @@ test("validates contact messages before trying to send email", async () => {
     assert.equal(body.message, "Name must be at least 2 characters.");
 });
 
-test("reports email delivery failures while keeping the saved contact", async () => {
+test("returns after saving while email delivery continues in the background", async () => {
     let savedContact;
-    let resolveNotification;
-    const pendingNotification = new Promise((resolve) => {
-        resolveNotification = resolve;
+    let rejectNotification;
+    let resolveNotificationFailure;
+    const pendingNotification = new Promise((_resolve, reject) => {
+        rejectNotification = reject;
+    });
+    const notificationFailure = new Promise((resolve) => {
+        resolveNotificationFailure = resolve;
     });
     const response = {
         statusCode: null,
@@ -122,13 +144,13 @@ test("reports email delivery failures while keeping the saved contact", async ()
         saveMessage: async (contact) => {
             savedContact = contact;
         },
-        notifyByEmail: async () => {
-            resolveNotification();
-            await pendingNotification;
-            throw new Error("Provider unavailable");
-        },
+        notifyByEmail: () => pendingNotification,
         hasEmailCredentials: () => true,
-        logger: { error() {} },
+        logger: {
+            error(message, error) {
+                resolveNotificationFailure({ message, error });
+            },
+        },
     });
 
     await handler(
@@ -146,9 +168,12 @@ test("reports email delivery failures while keeping the saved contact", async ()
     assert.equal(savedContact.email, "arman@example.com");
     assert.equal(response.statusCode, 201);
     assert.equal(response.body.success, true);
-    assert.equal(response.body.emailNotification, "failed");
+    assert.equal(response.body.emailNotification, "pending");
 
-    await pendingNotification;
+    rejectNotification(new Error("Provider unavailable"));
+    const failure = await notificationFailure;
+    assert.equal(failure.message, "Unable to send contact email:");
+    assert.equal(failure.error, "Provider unavailable");
 });
 
 test("reports when email notification credentials are missing", async () => {

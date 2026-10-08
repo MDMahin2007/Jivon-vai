@@ -139,10 +139,13 @@ export default function ProjectDetail() {
                 >
                   <video
                     src={video}
+                    poster={project.coverImage}
                     controls
+                    playsInline
+                    preload="metadata"
                     className="h-full w-full object-cover"
                   />
-                  <div className="absolute left-4 top-4 z-10 border border-primary/10 bg-dark/70 px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-primary">
+                  <div className="pointer-events-none absolute left-4 top-4 z-10 border border-primary/10 bg-dark/70 px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-primary">
                     Clip {index + 1}
                   </div>
                 </div>
@@ -166,6 +169,8 @@ export default function ProjectDetail() {
                   <img
                     src={image}
                     alt={`${project.title} - Media ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-dark/20 transition-colors duration-300 group-hover:bg-dark/45" />
@@ -205,6 +210,7 @@ export default function ProjectDetail() {
             <img
               src={galleryImages[activeImgIdx]}
               alt={`${project.title} - Full media`}
+              decoding="async"
               className="max-h-[80vh] max-w-[90vw] cursor-default object-contain"
               onClick={(event) => event.stopPropagation()}
             />

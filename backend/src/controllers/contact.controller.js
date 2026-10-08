@@ -38,19 +38,20 @@ export function createContactHandler({
     }
 
     const emailConfigured = hasEmailCredentials();
-    let emailNotification = emailConfigured ? "failed" : "not_configured";
+    let emailNotification = "not_configured";
 
     if (!emailConfigured) {
       logger.error(
         "Contact message saved, but email provider configuration is missing or invalid.",
       );
     } else {
-      try {
-        await notifyByEmail(contactData);
-        emailNotification = "sent";
-      } catch (error) {
-        logger.error("Unable to send contact email:", error.message);
-      }
+      emailNotification = "pending";
+      void Promise.resolve()
+        .then(() => notifyByEmail(contactData))
+        .catch((error) => {
+          const detail = error instanceof Error ? error.message : String(error);
+          logger.error("Unable to send contact email:", detail);
+        });
     }
 
     return res.status(201).json({

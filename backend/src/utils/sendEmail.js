@@ -73,6 +73,9 @@ ${contactData.message}`;
         pool: true,
         maxConnections: 1,
         maxMessages: 100,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         auth: {
           user: env.EMAIL_USER,
           pass: env.EMAIL_PASS,

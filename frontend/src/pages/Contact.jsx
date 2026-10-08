@@ -14,6 +14,7 @@ export default function Contact() {
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
   const [emailWarning, setEmailWarning] = useState(false);
+  const [emailPending, setEmailPending] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // লোডিং স্টেট
 
@@ -66,6 +67,7 @@ export default function Contact() {
 
         if (response.ok && data?.success) {
           setEmailWarning(data.emailNotification !== "sent");
+          setEmailPending(data.emailNotification === "pending");
           setShowPopup(true);
           setFormValues({
             name: "",
@@ -299,7 +301,9 @@ export default function Contact() {
                 Thank You!
               </h3>
               <p className="text-black text-sm leading-relaxed mb-6">
-                {emailWarning
+                {emailPending
+                  ? "Your message was saved. Its email notification is being processed, and we will contact you soon."
+                  : emailWarning
                   ? "Your message was saved, but the email notification could not be sent. Please contact us directly."
                   : "Your message has been saved successfully."}
                 <br />

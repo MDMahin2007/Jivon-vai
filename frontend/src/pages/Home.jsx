@@ -19,28 +19,28 @@ export default function Home() {
   // Hero Carousel state
   const heroSlides = [
     {
-      image: "/img/project-12/Scene 2.png",
+      image: "/projects/project-12/Scene 2.webp",
       title: "Structural Elegance",
       subtitle: "FEATURED PROJECT",
       description:
         "At Arcforma Studio, we combine thoughtful structure with visual precision to create inspiring architectural experiences.",
     },
     {
-      image: "/img/project-1/Scene 25_1.png",
+      image: "/projects/project-1/Scene 25_1.webp",
       title: "Luxury Residential Duplex",
       subtitle: "RESIDENTIAL",
       description:
         "Clean modern layouts, smart lighting systems, and high-end materials selected for functional, high-density comfort.",
     },
     {
-      image: "/img/project-9/Scene 5.png",
+      image: "/projects/project-9/Scene 5.webp",
       title: "Corporate Headquarters",
       subtitle: "COMMERCIAL",
       description:
         "Bespoke architectural execution and interior zoning representing sleek professional productivity.",
     },
     {
-      image: "/img/project-3/Scene 7_1.png",
+      image: "/projects/project-3/Scene 7_1.webp",
       title: "Sustainable Villa Blueprint",
       subtitle: "SITE PLANNING",
       description:
@@ -80,7 +80,6 @@ export default function Home() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
-  const [emailWarning, setEmailWarning] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // 🌟 লোডিং স্টেট যুক্ত করা হয়েছে
 
@@ -132,7 +131,6 @@ export default function Home() {
         const data = await response.json().catch(() => null);
 
         if (response.ok && data?.success) {
-          setEmailWarning(data.emailNotification !== "sent");
           setShowPopup(true);
           setFormValues({
             name: "",
@@ -275,18 +273,24 @@ export default function Home() {
           {/* Images Grid Stack */}
           <div className="relative flex justify-center h-[450px]">
             <img
-              src="/img/project-3/Scene 7_1.png"
+              src="/projects/project-3/Scene 7_1.webp"
               alt="Arcforma Studio residential concept"
+              loading="lazy"
+              decoding="async"
               className="absolute left-0 bottom-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-20"
             />
             <img
-              src="/img/project-5/Scene 2(1).png"
+              src="/projects/project-5/Scene 2(1).webp"
               alt="Arcforma Studio interior design concept"
+              loading="lazy"
+              decoding="async"
               className="absolute right-4 top-4 w-2/3 h-2/3 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-10"
             />
             <img
-              src="/img/project-11/1 (2).png"
+              src="/projects/project-11/1 (2).webp"
               alt="Arcforma Studio exterior facade concept"
+              loading="lazy"
+              decoding="async"
               className="absolute left-[15%] top-[25%] w-1/2 h-1/2 object-cover shadow-2xl border border-dark-border/40 hover:scale-105 transition-transform duration-500 z-30"
             />
           </div>
@@ -425,6 +429,8 @@ export default function Home() {
                   <img
                     src={project.coverImage}
                     alt={project.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-300" />
@@ -596,6 +602,19 @@ export default function Home() {
                 {loading ? "SAVING..." : "SEND EMAIL →"}
               </button>
             </form>
+            {/* Google Map Embed */}
+            <div className="w-full h-[300px] bg-dark-card border border-dark-border/40 overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5638.128395751125!2d90.41876783719172!3d23.78311618236074!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c79705d8041d%3A0xe1bf95ab3b06a96f!2sUttar%20Badda%2C%20Dhaka%201212!5e1!3m2!1sen!2sbd!4v1776697924590!5m2!1sen!2sbd"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Uttar Badda, Dhaka, Map Location"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -621,12 +640,10 @@ export default function Home() {
               <h3 className="text-2xl font-bold font-heading text-black mb-2">
                 Thank You!
               </h3>
-              <p className="text-black text-sm leading-relaxed mb-6">
-                {emailWarning
-                  ? "Your message was saved, but the email notification could not be sent. Please contact us directly."
-                  : "Your message has been saved successfully."}
+              <p className="text-black/70 text-sm leading-relaxed mb-6">
+                Your message has been sent successfully.
                 <br />
-                {!emailWarning && "We will contact you soon."}
+                We will contact you soon.
               </p>
               <button
                 onClick={() => setShowPopup(false)}

@@ -28,8 +28,10 @@ export default function About() {
               className="relative p-2 bg-gradient-to-tr from-primary via-dark-card to-primary/40 rounded-sm shadow-2xl w-full max-w-[380px]"
             >
               <img
-                src="/img/jibon.jpg"
+                src="/projects/jibon.webp"
                 alt="Architect Jibon"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto object-cover rounded-sm border-4 border-dark"
               />
               <div className="absolute -bottom-6 -right-6 bg-primary text-dark p-4 font-heading font-bold text-xs tracking-wider z-20">
@@ -195,6 +197,8 @@ export default function About() {
                 <img
                   src={member.image}
                   alt={member.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-40 h-40 object-cover rounded-full mx-auto border-2 border-primary mb-6"
                 />
                 <h3 className="text-lg font-bold font-heading text-white">

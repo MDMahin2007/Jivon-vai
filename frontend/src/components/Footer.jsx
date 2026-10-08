@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import {
   FaFacebookF,
   FaBehance,
-  FaInstagram,
-  FaLinkedinIn,
 } from "react-icons/fa";
 
 export default function Footer() {
@@ -93,10 +91,17 @@ export default function Footer() {
           </h5>
           <ul className="flex flex-col gap-3 text-sm">
             <li className="leading-relaxed">Dhaka, Bangladesh</li>
-            <li>+8801882111979</li>
             <li>
               <a
-                href="mailto:hello@jivonvai.com"
+                href="tel:+8801882111979"
+                className="hover:text-primary transition-colors duration-300"
+              >
+                +8801882111979
+              </a>
+            </li>
+            <li>
+              <a
+                href="mailto:arcjibon750@gmail.com"
                 className="hover:text-primary transition-colors duration-300"
               >
                 arcjibon750@gmail.com
@@ -128,24 +133,6 @@ export default function Footer() {
               aria-label="Behance"
             >
               <FaBehance size={16} />
-            </a>
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-white hover:text-dark hover:bg-primary hover:border-primary transition-all duration-300"
-              aria-label="Instagram"
-            >
-              <FaInstagram size={16} />
-            </a>
-            <a
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-white hover:text-dark hover:bg-primary hover:border-primary transition-all duration-300"
-              aria-label="LinkedIn"
-            >
-              <FaLinkedinIn size={16} />
             </a>
           </div>
         </div>

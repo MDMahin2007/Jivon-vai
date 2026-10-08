@@ -54,7 +54,7 @@ export default function Navbar() {
           aria-label="Arcforma Studio Home"
         >
           <img
-            src="/img/logo.png"
+            src="/projects/logo.webp"
             alt="Arcforma Studio Logo"
             className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-full object-cover border border-primary/40 shadow-[0_8px_24px_rgba(37,51,44,0.16)] transition-transform duration-300 hover:scale-105"
           />

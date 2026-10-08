@@ -73,6 +73,9 @@ test("keeps Gmail SMTP available for local development", async () => {
   await sendEmail(contactData);
 
   assert.equal(transportOptions.auth.user, "studio@gmail.com");
+  assert.equal(transportOptions.connectionTimeout, 10000);
+  assert.equal(transportOptions.greetingTimeout, 10000);
+  assert.equal(transportOptions.socketTimeout, 10000);
   assert.equal(sent.length, 2);
   assert.equal(sent[0].to, "arcjibon750@gmail.com");
 });

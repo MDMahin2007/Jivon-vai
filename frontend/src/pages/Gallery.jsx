@@ -60,6 +60,8 @@ export default function Gallery() {
               <img
                 src={item.image}
                 alt={item.title}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 flex flex-col justify-end bg-black/70 p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -99,6 +101,7 @@ export default function Gallery() {
             <img
               src={images[activeImageIndex].image}
               alt={images[activeImageIndex].title}
+              decoding="async"
               className="max-h-[80vh] max-w-[90vw] cursor-default object-contain"
               onClick={(event) => event.stopPropagation()}
             />
