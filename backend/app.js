@@ -14,6 +14,7 @@ const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "https://jivon-vai-five.vercel.app",
+  "https://jivon-vai.vercel.app",
 ]);
 
 app.set("trust proxy", 1);

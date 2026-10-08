@@ -70,6 +70,23 @@ test("continues to allow the deployed Vercel frontend", async () => {
     );
 });
 
+test("allows the jivon-vai Vercel frontend alias", async () => {
+    const response = await fetch(`${baseUrl}/api/contact/send-email`, {
+        method: "OPTIONS",
+        headers: {
+            Origin: "https://jivon-vai.vercel.app",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    });
+
+    assert.equal(response.status, 204);
+    assert.equal(
+        response.headers.get("access-control-allow-origin"),
+        "https://jivon-vai.vercel.app",
+    );
+});
+
 test("validates contact messages before trying to send email", async () => {
     const response = await fetch(`${baseUrl}/api/contact/send-email`, {
         method: "POST",
