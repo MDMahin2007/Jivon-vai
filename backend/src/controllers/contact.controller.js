@@ -39,6 +39,11 @@ export function createContactHandler({
     }
 
     const emailConfigured = hasEmailCredentials();
+    if (!emailConfigured) {
+      logger.error(
+        "Contact message saved, but email notification is not configured.",
+      );
+    }
     res.status(201).json({
       success: true,
       emailNotification: emailConfigured ? "sending" : "not_configured",

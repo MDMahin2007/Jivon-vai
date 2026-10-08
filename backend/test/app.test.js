@@ -147,3 +147,44 @@ test("confirms a saved contact without waiting for the email provider", async ()
     resolveNotification();
     await pendingNotification;
 });
+
+test("reports when email notification credentials are missing", async () => {
+    let savedContact;
+    const response = {
+        statusCode: null,
+        body: null,
+        status(statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        },
+        json(body) {
+            this.body = body;
+            return this;
+        },
+    };
+    const handler = createContactHandler({
+        saveMessage: async (contact) => {
+            savedContact = contact;
+        },
+        notifyByEmail: assert.fail,
+        hasEmailCredentials: () => false,
+        logger: { error() {} },
+    });
+
+    await handler(
+        {
+            body: {
+                name: "Arman Hosen",
+                email: "arman@example.com",
+                phone: "+8801882111979",
+                message: "I would like to discuss a design project.",
+            },
+        },
+        response,
+    );
+
+    assert.equal(savedContact.email, "arman@example.com");
+    assert.equal(response.statusCode, 201);
+    assert.equal(response.body.success, true);
+    assert.equal(response.body.emailNotification, "not_configured");
+});

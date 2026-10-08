@@ -80,6 +80,7 @@ export default function Home() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const [emailWarning, setEmailWarning] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // 🌟 লোডিং স্টেট যুক্ত করা হয়েছে
 
@@ -131,7 +132,8 @@ export default function Home() {
         const data = await response.json().catch(() => null);
 
         if (response.ok && data?.success) {
-          setShowPopup(true); // সাকসেস পপআপ দেখাবে
+          setEmailWarning(data.emailNotification === "not_configured");
+          setShowPopup(true);
           setFormValues({
             name: "",
             phone: "",
@@ -620,9 +622,11 @@ export default function Home() {
                 Thank You!
               </h3>
               <p className="text-black text-sm leading-relaxed mb-6">
-                Your message has been saved successfully.
+                {emailWarning
+                  ? "Your message was saved, but email notifications are not configured on the server. Please contact the site owner."
+                  : "Your message has been saved successfully."}
                 <br />
-                We will contact you soon.
+                {!emailWarning && "We will contact you soon."}
               </p>
               <button
                 onClick={() => setShowPopup(false)}

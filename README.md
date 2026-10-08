@@ -60,7 +60,7 @@ Backend
 
    For a production frontend build, set `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api` in the deployment environment. Vite embeds this value into the frontend build.
 
-5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. Set `MONGODB_DB_NAME` and `MONGODB_URI` in the Render backend environment. Set `FRONTEND_URL=https://jivon-vai-five.vercel.app` so the deployed frontend can access the API through CORS. For local development, set it to `http://localhost:5173` in `backend/.env`.
+5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. In the Render backend environment, set `MONGODB_DB_NAME`, `MONGODB_URI`, `EMAIL_USER`, `EMAIL_PASS` (a Gmail App Password), `CONTACT_RECIPIENT`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app`. Redeploy the backend after changing environment variables. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
 
 ## Production build
 

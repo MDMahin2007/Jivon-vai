@@ -13,6 +13,7 @@ export default function Contact() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const [emailWarning, setEmailWarning] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // লোডিং স্টেট
 
@@ -64,7 +65,8 @@ export default function Contact() {
         const data = await response.json().catch(() => null);
 
         if (response.ok && data?.success) {
-          setShowPopup(true); // মেইল সফলভাবে গেলে পপআপ দেখাবে
+          setEmailWarning(data.emailNotification === "not_configured");
+          setShowPopup(true);
           setFormValues({
             name: "",
             phone: "",
@@ -297,9 +299,11 @@ export default function Contact() {
                 Thank You!
               </h3>
               <p className="text-black text-sm leading-relaxed mb-6">
-                Your message has been saved successfully.
+                {emailWarning
+                  ? "Your message was saved, but email notifications are not configured on the server. Please contact the site owner."
+                  : "Your message has been saved successfully."}
                 <br />
-                We will contact you soon.
+                {!emailWarning && "We will contact you soon."}
               </p>
               <button
                 onClick={() => setShowPopup(false)}
