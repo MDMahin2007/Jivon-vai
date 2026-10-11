@@ -1,5 +1,4 @@
 import React from 'react';
-import { getResponsiveImageProps } from "../utils/responsiveImage";
 
 export default function RunningProject() {
   return (
@@ -19,10 +18,6 @@ export default function RunningProject() {
         <div className="bg-dark-card border border-dark-border/40 overflow-hidden mb-12 shadow-2xl">
           <img 
             src="/projects/project-9/zi bablu floor plan 2.webp"
-            {...getResponsiveImageProps(
-              "/projects/project-9/zi bablu floor plan 2.webp",
-              "100vw",
-            )}
             alt="Running Project Cover Office Layout" 
             fetchPriority="high"
             decoding="async"
@@ -36,10 +31,6 @@ export default function RunningProject() {
           <div className="bg-dark-card border border-dark-border/40 overflow-hidden shadow-xl">
             <img 
               src="/projects/project-9/zi bablu floor plan.webp"
-              {...getResponsiveImageProps(
-                "/projects/project-9/zi bablu floor plan.webp",
-                "(max-width: 768px) 100vw, 50vw",
-              )}
               alt="Conference Room Layout Blueprint" 
               loading="lazy"
               decoding="async"
@@ -65,10 +56,6 @@ export default function RunningProject() {
         <div className="bg-dark-card border border-dark-border/40 overflow-hidden shadow-2xl">
           <img 
             src="/projects/project-9/zi bablu floor plan 1.webp"
-            {...getResponsiveImageProps(
-              "/projects/project-9/zi bablu floor plan 1.webp",
-              "100vw",
-            )}
             alt="Office Blueprint Details" 
             loading="lazy"
             decoding="async"

@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { projectsData } from "../data/projects";
-import { getResponsiveImageProps } from "../utils/responsiveImage";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -170,10 +169,6 @@ export default function ProjectDetail() {
                 >
                   <img
                     src={image}
-                    {...getResponsiveImageProps(
-                      image,
-                      "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw",
-                    )}
                     alt={`${project.title} - Media ${index + 1}`}
                     loading="lazy"
                     decoding="async"
@@ -215,7 +210,6 @@ export default function ProjectDetail() {
           <div className="relative my-6 flex flex-1 items-center justify-center">
             <img
               src={galleryImages[activeImgIdx]}
-              {...getResponsiveImageProps(galleryImages[activeImgIdx], "90vw")}
               alt={`${project.title} - Full media`}
               decoding="async"
               className="max-h-[80vh] max-w-[90vw] cursor-default object-contain"

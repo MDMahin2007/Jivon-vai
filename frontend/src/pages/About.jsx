@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { teamData } from "../data/projects";
 import { FaGraduationCap } from "react-icons/fa";
-import { getResponsiveImageProps } from "../utils/responsiveImage";
 
 export default function About() {
   return (
@@ -197,7 +196,6 @@ export default function About() {
               >
                 <img
                   src={member.image}
-                  {...getResponsiveImageProps(member.image, "160px")}
                   alt={member.name}
                   loading="lazy"
                   decoding="async"
