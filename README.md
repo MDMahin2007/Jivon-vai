@@ -61,7 +61,7 @@ Backend
 
    For a production frontend build, set `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api` in the deployment environment. Vite embeds this value into the frontend build.
 
-5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database before email notification is attempted. The API responds as soon as MongoDB saves the message; email is attempted in the background and failures are logged. Render Free blocks outbound SMTP ports, so configure an HTTPS email provider for production: verify a sender domain in Resend, then set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` (an address on the verified domain), and `CONTACT_RECIPIENT` in the Render backend environment. Keep Gmail SMTP (`EMAIL_PROVIDER=gmail`, `EMAIL_USER`, and `EMAIL_PASS` as a Gmail App Password) for local development. Set `MONGODB_DB_NAME`, `MONGODB_URI`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app` as well, then redeploy the backend. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
+5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database with a durable email-outbox status. The API responds after the database save without waiting for email delivery. The backend worker sends queued notifications and retries temporary delivery failures up to five times. Render Free blocks outbound SMTP ports, so configure an HTTPS email provider for production: verify a sender domain in Resend, then set `RESEND_API_KEY`, `EMAIL_FROM` (an address on the verified domain), and `CONTACT_RECIPIENT` in the Render backend environment. Render automatically uses Resend when its API key is present; Gmail SMTP is retained for local development with `EMAIL_PROVIDER=gmail`, `EMAIL_USER`, and `EMAIL_PASS` (a Gmail App Password). Set `MONGODB_DB_NAME`, `MONGODB_URI`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app` as well, then redeploy the backend. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
 
 ## Production build
 
@@ -80,15 +80,15 @@ npm run build
 ## Notes
 
 - Projects, services, optimized WebP images, and 720p MP4 videos are served from the frontend's local data and `public/projects` assets.
-- The backend validates and stores contact form submissions in MongoDB, then attempts email notification asynchronously when the provider is configured.
+- The backend validates and stores contact form submissions and email notification status in MongoDB; a background worker sends and retries email notifications when the provider is configured.
 
 ## Architecture
 
-The frontend owns the portfolio content and optimized media. The backend exposes a contact endpoint that validates and stores each message in MongoDB before attempting an email notification in the background.
+The frontend owns the portfolio content and optimized media. The backend exposes a contact endpoint that validates and stores each message and its email-outbox status in MongoDB. A background worker sends pending email notifications and retries temporary failures.
 
 ## API overview
 
-- `POST /api/contact/send-email` — validate and store a contact enquiry, then attempt email notification asynchronously (`emailNotification: "pending"`); delivery failures are logged
+- `POST /api/contact/send-email` — validate and store a contact enquiry and queue an email notification (`emailNotification: "pending"`); email retries and delivery status are tracked in the same MongoDB document
 
 ## Security notes
 
@@ -107,7 +107,7 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-Backend tests cover contact validation and both Resend API and local Gmail SMTP delivery paths. Frontend linting uses ESLint's recommended rules.
+Backend tests cover contact validation, durable email queue processing/retries, and both Resend API and local Gmail SMTP delivery paths. Frontend linting uses ESLint's recommended rules.
 
 ## Deployment notes
 

@@ -1,11 +1,12 @@
 import { validateContactInput } from "../utils/contactValidation.js";
-import sendEmail, { isEmailConfigured } from "../utils/sendEmail.js";
+import { isEmailConfigured } from "../utils/sendEmail.js";
 import { saveContactMessage } from "../config/database.js";
+import { wakeEmailOutbox } from "../utils/emailOutboxRuntime.js";
 
 export function createContactHandler({
   saveMessage = saveContactMessage,
-  notifyByEmail = sendEmail,
   hasEmailCredentials = isEmailConfigured,
+  wakeEmailOutbox: wakeOutbox = wakeEmailOutbox,
   logger = console,
 } = {}) {
   return async (req, res) => {
@@ -26,9 +27,10 @@ export function createContactHandler({
       interest: typeof input.interest === "string" ? input.interest.trim() : "",
       message: input.message.trim(),
     };
+    const emailConfigured = hasEmailCredentials();
 
     try {
-      await saveMessage(contactData);
+      await saveMessage(contactData, { emailConfigured });
     } catch (error) {
       logger.error("Unable to save contact message:", error.message);
       return res.status(503).json({
@@ -37,27 +39,20 @@ export function createContactHandler({
       });
     }
 
-    const emailConfigured = hasEmailCredentials();
-    let emailNotification = "not_configured";
-
     if (!emailConfigured) {
       logger.error(
         "Contact message saved, but email provider configuration is missing or invalid.",
       );
     } else {
-      emailNotification = "pending";
-      void Promise.resolve()
-        .then(() => notifyByEmail(contactData))
-        .catch((error) => {
-          const detail = error instanceof Error ? error.message : String(error);
-          logger.error("Unable to send contact email:", detail);
-        });
+      wakeOutbox();
     }
 
     return res.status(201).json({
       success: true,
-      emailNotification,
-      message: "Your message has been saved successfully.",
+      emailNotification: emailConfigured ? "pending" : "not_configured",
+      message: emailConfigured
+        ? "Your message has been saved and its email notification is queued."
+        : "Your message has been saved, but email notification is not configured.",
     });
   };
 }

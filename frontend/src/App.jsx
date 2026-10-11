@@ -14,7 +14,6 @@ import Services from "./pages/Services";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Gallery from "./pages/Gallery";
-import Contact from "./pages/Contact";
 import RunningProject from "./pages/RunningProject";
 
 function ScrollToTop() {
@@ -60,7 +59,10 @@ function AppLayout() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/gallery" element={<Gallery />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/contact"
+            element={<Navigate to="/#contact" replace />}
+          />
           <Route path="/running-project" element={<RunningProject />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

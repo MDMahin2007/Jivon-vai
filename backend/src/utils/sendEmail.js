@@ -3,7 +3,11 @@ import nodemailer from "nodemailer";
 const RESEND_API_URL = "https://api.resend.com/emails";
 
 function getProvider(env) {
-  const isProduction = env.NODE_ENV === "production" || env.RENDER === "true";
+  if (env.RENDER === "true") {
+    return "resend";
+  }
+
+  const isProduction = env.NODE_ENV === "production";
   if (isProduction && env.RESEND_API_KEY) {
     return "resend";
   }

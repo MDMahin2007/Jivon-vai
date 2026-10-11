@@ -80,6 +80,7 @@ export default function Home() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const [emailNotification, setEmailNotification] = useState("pending");
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false); // 🌟 লোডিং স্টেট যুক্ত করা হয়েছে
 
@@ -131,6 +132,7 @@ export default function Home() {
         const data = await response.json().catch(() => null);
 
         if (response.ok && data?.success) {
+          setEmailNotification(data.emailNotification || "pending");
           setShowPopup(true);
           setFormValues({
             name: "",
@@ -226,7 +228,7 @@ export default function Home() {
               </Link>
 
               <Link
-                to="/contact"
+                to="/#contact"
                 className="bg-primary hover:bg-primary-hover text-dark font-heading text-xs tracking-widest font-bold px-8 py-4 rounded-none transition-all duration-300 shadow-lg hover:shadow-primary/20"
               >
                 CONTACT US &rarr;
@@ -386,7 +388,7 @@ export default function Home() {
               OUR GALLERY
             </Link>
             <Link
-              to="/contact"
+              to="/#contact"
               className="border border-white/20 hover:border-primary text-white font-heading text-xs tracking-widest font-bold px-8 py-4 transition-all duration-300"
             >
               CONTACT US
@@ -460,138 +462,211 @@ export default function Home() {
 
       {/* Contact Form Section */}
       <section
-        className="py-24 scroll-mt-24 bg-dark-accent border-t border-dark-border/10"
+        className="scroll-mt-24 border-t border-dark-border/20 bg-gradient-to-b from-dark-accent to-dark py-24"
         id="contact"
       >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-12 max-w-2xl text-left">
+            <p className="mb-3 font-heading text-xs font-bold tracking-[0.3em] text-primary">
+              LET&apos;S TALK
+            </p>
+            <h2 className="mb-4 font-heading text-3xl font-bold tracking-wide text-white sm:text-4xl">
+              Start a Project
+            </h2>
+            <p className="max-w-xl font-sans text-sm leading-relaxed text-gray-400 sm:text-base">
+              Tell us what you&apos;re planning. Our team will review your
+              enquiry and get back to you as soon as possible.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
             {/* Info and Form Header */}
             <div className="text-left">
-              <p className="text-primary font-heading text-xs tracking-[0.3em] font-bold mb-3">
-                CONTACT US
+              <h3 className="mb-3 font-heading text-lg font-semibold text-white">
+                A good place to start
+              </h3>
+              <p className="mb-8 max-w-md font-sans text-sm leading-relaxed text-gray-400">
+                Share a little about your space, timeline, or design goals.
+                We&apos;ll help you shape the next steps.
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-8 tracking-wide text-white">
-                Start a Project
-              </h2>
-              <p className="text-gray-400 font-sans leading-relaxed mb-8 max-w-md">
-                Have a design concept or a complex architectural mapping job?
-                Get in touch with our team today and receive a detailed project
-                outline.
-              </p>
-              <div className="flex flex-col gap-6 text-sm text-gray-400">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-none bg-dark-card border border-primary/20 flex items-center justify-center text-primary">
+              <div className="flex flex-col gap-5 text-sm text-gray-400">
+                <div className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary">
                     <FaMapMarkerAlt size={16} />
                   </div>
                   <div>
-                    <h4 className="text-xs tracking-wider font-heading font-bold text-white uppercase">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
                       Location
                     </h4>
                     <p className="text-xs">Dhaka, Bangladesh</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-none bg-dark-card border border-primary/20 flex items-center justify-center text-primary">
+                <a
+                  href="tel:+8801882111979"
+                  className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-primary/30"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary">
                     <FaPhone size={16} />
                   </div>
                   <div>
-                    <h4 className="text-xs tracking-wider font-heading font-bold text-white uppercase">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
                       Phone
                     </h4>
                     <p className="text-xs">+8801882111979</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-none bg-dark-card border border-primary/20 flex items-center justify-center text-primary">
+                </a>
+                <a
+                  href="mailto:arcjibon750@gmail.com"
+                  className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-primary/30"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary">
                     <FaEnvelope size={16} />
                   </div>
                   <div>
-                    <h4 className="text-xs tracking-wider font-heading font-bold text-white uppercase">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
                       Email
                     </h4>
                     <p className="text-xs">arcjibon750@gmail.com</p>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
 
             {/* Form */}
             <form
               onSubmit={handleFormSubmit}
-              className="glass-panel p-10 flex flex-col gap-4"
+              className="glass-panel flex flex-col gap-5 rounded-xl border border-white/10 bg-[#111714]/90 p-6 shadow-2xl shadow-black/20 sm:p-8"
             >
+              <div className="mb-1 border-b border-white/10 pb-5">
+                <h3 className="font-heading text-lg font-semibold text-white">
+                  Project enquiry
+                </h3>
+                <p className="mt-1 text-xs text-gray-500">
+                  Fields marked with * are required.
+                </p>
+              </div>
               <div>
+                <label
+                  htmlFor="contact-name"
+                  className="mb-2 block text-xs font-medium text-gray-300"
+                >
+                  Your name
+                </label>
                 <input
+                  id="contact-name"
                   type="text"
                   name="name"
                   value={formValues.name}
                   onChange={handleInputChange}
-                  placeholder="Name"
-                  className={`w-full bg-dark/60 contact-form-field border ${
+                  autoComplete="name"
+                  required
+                  minLength={2}
+                  placeholder="e.g. Jibon Ahmed"
+                  className={`w-full rounded-md border bg-dark/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
                     formErrors.name
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
-                  } px-5 py-4 text-sm focus:outline-none transition-colors duration-300`}
+                  } transition-colors duration-200`}
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="contact-phone"
+                    className="mb-2 block text-xs font-medium text-gray-300"
+                  >
+                    Phone number *
+                  </label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    name="phone"
+                    value={formValues.phone}
+                    onChange={handleInputChange}
+                    autoComplete="tel"
+                    required
+                    minLength={5}
+                    placeholder="+880..."
+                    className={`w-full rounded-md border bg-dark/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                      formErrors.phone
+                        ? "border-red-500"
+                        : "border-dark-border/60 focus:border-primary"
+                    } transition-colors duration-200`}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="contact-email"
+                    className="mb-2 block text-xs font-medium text-gray-300"
+                  >
+                    Email address *
+                  </label>
                 <input
-                  type="tel"
-                  name="phone"
-                  value={formValues.phone}
-                  onChange={handleInputChange}
-                  placeholder="Phone Number*"
-                  className={`w-full bg-dark/60 contact-form-field border ${
-                    formErrors.phone
-                      ? "border-red-500"
-                      : "border-dark-border/60 focus:border-primary"
-                  } px-5 py-4 text-sm focus:outline-none transition-colors duration-300`}
-                />
-                <input
-                  type="email"
-                  name="email"
-                  value={formValues.email}
-                  onChange={handleInputChange}
-                  placeholder="Email*"
-                  className={`w-full bg-dark/60 contact-form-field border ${
-                    formErrors.email
-                      ? "border-red-500"
-                      : "border-dark-border/60 focus:border-primary"
-                  } px-5 py-4 text-sm focus:outline-none transition-colors duration-300`}
-                />
+                    id="contact-email"
+                    type="email"
+                    name="email"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    autoComplete="email"
+                    required
+                    placeholder="you@example.com"
+                    className={`w-full rounded-md border bg-dark/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                      formErrors.email
+                        ? "border-red-500"
+                        : "border-dark-border/60 focus:border-primary"
+                    } transition-colors duration-200`}
+                  />
+                </div>
               </div>
               <div>
+                <label
+                  htmlFor="contact-interest"
+                  className="mb-2 block text-xs font-medium text-gray-300"
+                >
+                  What can we help with?
+                </label>
                 <input
+                  id="contact-interest"
                   type="text"
                   name="interest"
                   value={formValues.interest}
                   onChange={handleInputChange}
-                  placeholder="Interested in"
-                  className={`w-full bg-dark/60 contact-form-field border ${
+                  placeholder="Architecture, interior design, 3D visualization..."
+                  className={`w-full rounded-md border bg-dark/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
                     formErrors.interest
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
-                  } px-5 py-4 text-sm focus:outline-none transition-colors duration-300`}
+                  } transition-colors duration-200`}
                 />
               </div>
               <div>
+                <label
+                  htmlFor="contact-message"
+                  className="mb-2 block text-xs font-medium text-gray-300"
+                >
+                  Tell us about your project *
+                </label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={formValues.message}
                   onChange={handleInputChange}
-                  placeholder="Message*"
-                  rows="4"
-                  className={`w-full bg-dark/60 contact-form-field border ${
+                  placeholder="A few details about your project, goals, or timeline..."
+                  rows={5}
+                  required
+                  minLength={10}
+                  className={`w-full resize-y rounded-md border bg-dark/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
                     formErrors.message
                       ? "border-red-500"
                       : "border-dark-border/60 focus:border-primary"
-                  } px-5 py-4 text-sm focus:outline-none transition-colors duration-300 resize-none`}
+                  } transition-colors duration-200`}
                 />
               </div>
 
-              {/* 🌟 সাবমিট বাটন লোডিংসহ আপডেট করা হয়েছে */}
               {submitError && (
-                <p className="text-sm text-red-700" role="alert">
+                <p
+                  className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+                  role="alert"
+                >
                   {submitError}
                 </p>
               )}
@@ -599,24 +674,24 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-primary hover:bg-primary-hover text-dark font-heading text-xs tracking-widest font-bold py-4 transition-all duration-300 shadow-md disabled:opacity-50"
+                className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 py-3.5 font-heading text-xs font-bold tracking-[0.16em] text-dark shadow-lg shadow-primary/10 transition-all duration-200 hover:bg-primary-hover hover:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark disabled:cursor-wait disabled:opacity-70"
               >
-                {loading ? "SAVING..." : "SEND EMAIL →"}
+                {loading ? (
+                  <>
+                    <span
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-dark/30 border-t-dark"
+                      aria-hidden="true"
+                    />
+                    SAVING YOUR MESSAGE...
+                  </>
+                ) : (
+                  "SEND PROJECT ENQUIRY →"
+                )}
               </button>
+              <p className="text-center text-[11px] text-gray-500">
+                We&apos;ll use your details only to respond to this enquiry.
+              </p>
             </form>
-            {/* Google Map Embed */}
-            <div className="w-full h-[300px] bg-dark-card border border-dark-border/40 overflow-hidden shadow-lg">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5638.128395751125!2d90.41876783719172!3d23.78311618236074!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c79705d8041d%3A0xe1bf95ab3b06a96f!2sUttar%20Badda%2C%20Dhaka%201212!5e1!3m2!1sen!2sbd!4v1776697924590!5m2!1sen!2sbd"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Uttar Badda, Dhaka, Map Location"
-              />
-            </div>
           </div>
         </div>
       </section>
@@ -643,9 +718,11 @@ export default function Home() {
                 Thank You!
               </h3>
               <p className="text-black/70 text-sm leading-relaxed mb-6">
-                Your message has been sent successfully.
-                <br />
-                We will contact you soon.
+                {emailNotification === "pending"
+                  ? "Your enquiry is saved securely and queued for email delivery. We will contact you soon."
+                  : emailNotification === "not_configured"
+                    ? "Your enquiry is saved, but email notifications are temporarily unavailable. Please contact us directly."
+                    : "Your enquiry has been sent successfully. We will contact you soon."}
               </p>
               <button
                 onClick={() => setShowPopup(false)}

@@ -79,6 +79,18 @@ test("prefers Resend in production when Gmail is still configured", async () => 
   assert.equal(request.url, "https://api.resend.com/emails");
 });
 
+test("does not fall back to blocked Gmail SMTP on Render without Resend credentials", () => {
+  assert.equal(
+    isEmailConfigured({
+      RENDER: "true",
+      EMAIL_PROVIDER: "gmail",
+      EMAIL_USER: "studio@gmail.com",
+      EMAIL_PASS: "app-password",
+    }),
+    false,
+  );
+});
+
 test("keeps Gmail SMTP available for local development", async () => {
   let transportOptions;
   const sent = [];

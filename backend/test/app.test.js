@@ -118,16 +118,10 @@ test("validates contact messages before trying to send email", async () => {
     assert.equal(body.message, "Name must be at least 2 characters.");
 });
 
-test("returns after saving while email delivery continues in the background", async () => {
+test("saves a queued email notification without waiting for email delivery", async () => {
     let savedContact;
-    let rejectNotification;
-    let resolveNotificationFailure;
-    const pendingNotification = new Promise((_resolve, reject) => {
-        rejectNotification = reject;
-    });
-    const notificationFailure = new Promise((resolve) => {
-        resolveNotificationFailure = resolve;
-    });
+    let saveOptions;
+    let outboxWoken = false;
     const response = {
         statusCode: null,
         body: null,
@@ -141,16 +135,15 @@ test("returns after saving while email delivery continues in the background", as
         },
     };
     const handler = createContactHandler({
-        saveMessage: async (contact) => {
+        saveMessage: async (contact, options) => {
             savedContact = contact;
+            saveOptions = options;
         },
-        notifyByEmail: () => pendingNotification,
         hasEmailCredentials: () => true,
-        logger: {
-            error(message, error) {
-                resolveNotificationFailure({ message, error });
-            },
+        wakeEmailOutbox: () => {
+            outboxWoken = true;
         },
+        logger: { error() {} },
     });
 
     await handler(
@@ -169,11 +162,8 @@ test("returns after saving while email delivery continues in the background", as
     assert.equal(response.statusCode, 201);
     assert.equal(response.body.success, true);
     assert.equal(response.body.emailNotification, "pending");
-
-    rejectNotification(new Error("Provider unavailable"));
-    const failure = await notificationFailure;
-    assert.equal(failure.message, "Unable to send contact email:");
-    assert.equal(failure.error, "Provider unavailable");
+    assert.equal(saveOptions.emailConfigured, true);
+    assert.equal(outboxWoken, true);
 });
 
 test("reports when email notification credentials are missing", async () => {
@@ -191,11 +181,12 @@ test("reports when email notification credentials are missing", async () => {
         },
     };
     const handler = createContactHandler({
-        saveMessage: async (contact) => {
+        saveMessage: async (contact, options) => {
             savedContact = contact;
+            assert.equal(options.emailConfigured, false);
         },
-        notifyByEmail: assert.fail,
         hasEmailCredentials: () => false,
+        wakeEmailOutbox: assert.fail,
         logger: { error() {} },
     });
 
