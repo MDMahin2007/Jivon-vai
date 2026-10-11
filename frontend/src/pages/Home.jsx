@@ -178,6 +178,8 @@ export default function Home() {
             <img
               src={heroSlides[currentSlide].image}
               alt={heroSlides[currentSlide].title}
+              fetchPriority={currentSlide === 0 ? "high" : "auto"}
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
           </motion.div>

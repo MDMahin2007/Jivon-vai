@@ -54,6 +54,31 @@ test("throws when the Resend API rejects an email", async () => {
   await assert.rejects(sendEmail(contactData), /Resend API returned HTTP 403/);
 });
 
+test("prefers Resend in production when Gmail is still configured", async () => {
+  let request;
+  const sendEmail = createEmailSender({
+    env: {
+      RENDER: "true",
+      EMAIL_PROVIDER: "gmail",
+      EMAIL_USER: "studio@gmail.com",
+      EMAIL_PASS: "local-app-password",
+      RESEND_API_KEY: "production-api-key",
+      EMAIL_FROM: "Arcforma <contact@example.com>",
+    },
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200 };
+    },
+    createTransport: () => {
+      throw new Error("Gmail SMTP must not be used in production.");
+    },
+  });
+
+  await sendEmail(contactData);
+
+  assert.equal(request.url, "https://api.resend.com/emails");
+});
+
 test("keeps Gmail SMTP available for local development", async () => {
   let transportOptions;
   const sent = [];

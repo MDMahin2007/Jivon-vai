@@ -105,7 +105,6 @@ for (const inputPath of files) {
   if (!imageExtensions.has(extension) && !videoExtensions.has(extension)) {
     continue;
   }
-
   const outputPath = path.join(
     outputRoot,
     relativePath.replace(/\.[^.]+$/, outputExtension),
