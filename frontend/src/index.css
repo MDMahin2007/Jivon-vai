@@ -192,9 +192,31 @@
 
 .site-shell .premium-navbar,
 .site-shell .premium-navbar-scrolled {
-  background: rgba(230, 232, 228, 0.96);
-  border-bottom-color: var(--site-line);
-  box-shadow: 0 8px 24px rgba(37, 51, 44, 0.08);
+  background: rgba(230, 232, 228, 0.98);
+  border-bottom-color: rgba(212, 175, 55, 0.24);
+  box-shadow: 0 10px 30px rgba(13, 23, 19, 0.2);
+}
+
+.site-shell .premium-navbar-scrolled {
+  background: rgba(214, 203, 166, 0.98);
+  border-bottom-color: rgba(212, 175, 55, 0.3);
+}
+
+.site-shell .premium-navbar a > span {
+  color: #000000;
+}
+
+.site-shell .premium-navbar .text-white {
+  color: #000000 !important;
+}
+
+.site-shell .premium-navbar .text-primary {
+  color: #76621e !important;
+}
+
+.site-shell .premium-navbar #mobile-navigation {
+  background: rgba(13, 23, 19, 0.98);
+  border-bottom-color: rgba(212, 175, 55, 0.24);
 }
 
 .site-shell input:not([type="checkbox"]):not([type="radio"]),
@@ -207,9 +229,91 @@
   caret-color: #000000;
 }
 
+.site-shell #contact {
+  background: #e6e8e4 !important;
+  border-top-color: #e6e8e4 !important;
+}
+
+.site-shell #contact .text-white {
+  color: #090805 !important;
+}
+
+.site-shell #contact .text-gray-300,
+.site-shell #contact .text-gray-400 {
+  color: #93a897 !important;
+}
+
+.site-shell #contact .text-gray-500 {
+  color: #7f8983 !important;
+}
+
+.site-shell #contact .text-primary {
+  color: #795e05 !important;
+}
+
+.site-shell #contact .glass-panel {
+  background: #f4f5f2;
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+
+.site-shell #contact .glass-panel :is(h3, label) {
+  color: #25332c !important;
+}
+
+.site-shell #contact .glass-panel .text-gray-500 {
+  color: #66746b !important;
+}
+
+.site-shell #contact .glass-panel input,
+.site-shell #contact .glass-panel textarea {
+  background: #ffffff !important;
+  border-color: #d5ddd6 !important;
+  color: #111813 !important;
+  -webkit-text-fill-color: #111813 !important;
+  caret-color: #111813;
+}
+
+.site-shell #contact .glass-panel input::placeholder,
+.site-shell #contact .glass-panel textarea::placeholder {
+  color: #7b8980 !important;
+  -webkit-text-fill-color: #7b8980 !important;
+}
+
+.site-shell #contact .glass-panel input:-webkit-autofill,
+.site-shell #contact .glass-panel input:-webkit-autofill:hover,
+.site-shell #contact .glass-panel input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111813 !important;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #111813;
+}
+
+.site-shell #contact .glass-panel button {
+  color: #14211b !important;
+}
+
+.site-shell footer {
+  background: rgba(214, 203, 166, 0.98) !important;
+  border-top-color: rgba(214, 203, 166, 0.98) !important;
+}
+
+.site-shell footer .text-white {
+  color: #000000 !important;
+}
+
+.site-shell footer .text-gray-400,
+.site-shell footer .text-gray-500,
+.site-shell footer .text-gray-600 {
+  color: #252e28 !important;
+}
+
+.site-shell footer .text-primary {
+  color: #7a6c3d !important;
+}
+
 .site-shell input::placeholder,
 .site-shell textarea::placeholder {
-  color: #7b8980 !important;
+  color: #18221b !important;
 }
 
 .site-shell .contact-form-field {

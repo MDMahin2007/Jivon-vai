@@ -470,10 +470,10 @@ export default function Home() {
             <p className="mb-3 font-heading text-xs font-bold tracking-[0.3em] text-primary">
               LET&apos;S TALK
             </p>
-            <h2 className="mb-4 font-heading text-3xl font-bold tracking-wide text-white sm:text-4xl">
+            <h2 className="mb-4 font-heading text-3xl font-bold tracking-wide text-dark sm:text-4xl">
               Start a Project
             </h2>
-            <p className="max-w-xl font-sans text-sm leading-relaxed text-gray-400 sm:text-base">
+            <p className="max-w-xl font-sans text-sm leading-relaxed text-dark-400 sm:text-base">
               Tell us what you&apos;re planning. Our team will review your
               enquiry and get back to you as soon as possible.
             </p>
@@ -481,20 +481,20 @@ export default function Home() {
           <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
             {/* Info and Form Header */}
             <div className="text-left">
-              <h3 className="mb-3 font-heading text-lg font-semibold text-white">
+              <h3 className="mb-3 font-heading text-lg font-semibold text-dark-400 sm:text-xl">
                 A good place to start
               </h3>
-              <p className="mb-8 max-w-md font-sans text-sm leading-relaxed text-gray-400">
+              <p className="mb-8 max-w-md font-sans text-sm leading-relaxed text-dark-400">
                 Share a little about your space, timeline, or design goals.
                 We&apos;ll help you shape the next steps.
               </p>
-              <div className="flex flex-col gap-5 text-sm text-gray-400">
+              <div className="flex flex-col gap-5 text-sm text-dark-400">
                 <div className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary">
                     <FaMapMarkerAlt size={16} />
                   </div>
                   <div>
-                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-red-500">
                       Location
                     </h4>
                     <p className="text-xs">Dhaka, Bangladesh</p>
@@ -508,7 +508,7 @@ export default function Home() {
                     <FaPhone size={16} />
                   </div>
                   <div>
-                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-red-500">
                       Phone
                     </h4>
                     <p className="text-xs">+8801882111979</p>
@@ -522,7 +522,7 @@ export default function Home() {
                     <FaEnvelope size={16} />
                   </div>
                   <div>
-                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-white">
+                    <h4 className="mb-1 font-heading text-xs font-bold uppercase tracking-wider text-red-500">
                       Email
                     </h4>
                     <p className="text-xs">arcjibon750@gmail.com</p>
@@ -549,7 +549,7 @@ export default function Home() {
                   htmlFor="contact-name"
                   className="mb-2 block text-xs font-medium text-gray-300"
                 >
-                  Your name
+                  Your name *
                 </label>
                 <input
                   id="contact-name"
@@ -600,7 +600,7 @@ export default function Home() {
                   >
                     Email address *
                   </label>
-                <input
+                  <input
                     id="contact-email"
                     type="email"
                     name="email"
