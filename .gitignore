@@ -1,19 +1,41 @@
-# Dependencies
+# Dependencies and generated output
 node_modules/
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Build output
 dist/
 build/
 coverage/
 
-# Local tooling
+# Private environment configuration; keep only sanitized templates in Git
+.env
+.env.*
+!.env.example
+
+# Credentials, certificates, and local secret stores
+secrets/
+credentials/
+backups/
+database-backups/
+contact-exports/
+private-data/
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.bson
+*.dump
+*.archive
+id_rsa
+id_ed25519
+id_ecdsa
+
+# Local deployment/tooling state and operating-system files
+.vercel/
+.render/
 .vscode/
 .DS_Store
+Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+build_errors.txt

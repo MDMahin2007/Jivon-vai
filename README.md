@@ -1,105 +1,88 @@
-# ArcformaStudio
+# Arcforma Studio
 
-This project is a full-stack architecture and interior design portfolio website with a React frontend and Express backend.
+An architecture and interior design portfolio for a Dhaka-based studio. The site presents projects, visual galleries, services, and a home-page contact form backed by a Node.js API and MongoDB.
 
-## Project structure
+**Live website:** [https://jivon-vai-five.vercel.app](https://jivon-vai-five.vercel.app)  
+**Backend API:** [https://arcforma-studio.onrender.com](https://arcforma-studio.onrender.com) · [API health](https://arcforma-studio.onrender.com/)
 
-- `frontend/` — React + Vite + Tailwind frontend
-- `backend/` — Express contact form email API
+## Highlights
 
-## Tech stack
+- Responsive portfolio pages for projects, project details, services, and a visual gallery
+- Animated interactions using Framer Motion
+- Project-specific image galleries and video walkthroughs
+- Contact enquiries validated by the API and saved in MongoDB
+- A MongoDB-backed email outbox with automatic retries for temporary delivery failures
+- CORS allow-list, Helmet security headers, request-size limits, and contact rate limiting
 
-Frontend
+## Project layout
 
-- React 18
-- Vite
-- Tailwind CSS
-- Framer Motion
-- React Router
-- React Icons
+```text
+.
+├── frontend/   # React + Vite application; deployed on Vercel
+├── backend/    # Express API, MongoDB persistence, and email worker; deployed on Render
+└── README.md   # Full-stack project overview
+```
 
-Backend
+Each application folder has its own setup guide: [frontend/README.md](./frontend/README.md) and [backend/README.md](./backend/README.md).
 
-- Node.js
-- Express 5
-- CORS and request rate limiting
-- MongoDB
-- Nodemailer
-- Resend HTTP API for production email
+## Stack
+
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, Vite, Tailwind CSS, Framer Motion, React Router, React Icons |
+| Backend | Node.js 20.19+, Express 5, MongoDB Node.js driver |
+| Email | Resend HTTPS API in production; Nodemailer with Gmail for local development |
+| Hosting | Vercel (frontend), Render (backend), MongoDB Atlas (database) |
+
+## Contact delivery
+
+1. The frontend sends `POST /api/contact/send-email` to the backend.
+2. The API validates the enquiry and writes it, including its email status, to the `contactMessages` collection in the `ArcformaStudio` database.
+3. Once MongoDB confirms the write, the API responds without waiting for the email provider.
+4. A backend worker claims queued messages and sends them using the configured email provider.
+5. Temporary send failures are recorded and retried after approximately 30 seconds, 2 minutes, 10 minutes, and 1 hour. After five failed attempts, the record is marked `failed`; the enquiry remains in MongoDB.
+
+The `emailNotification` field records `pending`, `processing`, `sent`, `failed`, or `not_configured`. `sent` means the email provider accepted the request; it does not confirm delivery to the recipient's inbox. As with any email integration, check provider logs and spam folders if an email is missing.
+
+The outbox worker runs inside the backend process and is backed by MongoDB, so pending enquiries survive a backend restart. The production backend must have a valid email provider configuration for notifications to be sent.
 
 ## Requirements
 
-- Node.js 20.19+
-- A backend `.env` file with email credentials
+- Node.js 20.19 or newer
+- npm
+- A MongoDB database (MongoDB Atlas is suitable)
+- A Resend account and verified sender domain for production email
+- A Gmail App Password if using Gmail for local email testing
 
-## Backend setup
+## Local development
 
-1. Open the backend folder:
-   `cd backend`
-2. Install dependencies:
-   `npm install`
-3. Create a `.env` file based on the project template values, including:
-   - `PORT=5000`
-   - `FRONTEND_URL=https://jivon-vai-five.vercel.app`
-   - `MONGODB_DB_NAME=ArcformaStudio`
-   - `MONGODB_URI` with your MongoDB connection string
-   - `CONTACT_RECIPIENT=your_email`
-   - Local only: `EMAIL_PROVIDER=gmail`, `EMAIL_USER=your_email`, and `EMAIL_PASS=your_gmail_app_password`
-4. Start the server:
-   `npm run dev` or `npm start`
-
-## Frontend setup
-
-1. Open the frontend folder:
-   `cd frontend`
-2. Install dependencies:
-   `npm install`
-3. Start the app:
-   `npm run dev`
-4. The frontend's `.env.example` points to the local backend:
-   `VITE_API_BASE_URL=http://localhost:5000/api`
-
-   For a production frontend build, set `VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api` in the deployment environment. Vite embeds this value into the frontend build.
-
-5. Contact submissions are saved to the `contactMessages` collection in the `ArcformaStudio` database with a durable email-outbox status. The API responds after the database save without waiting for email delivery. The backend worker sends queued notifications and retries temporary delivery failures up to five times. Render Free blocks outbound SMTP ports, so configure an HTTPS email provider for production: verify a sender domain in Resend, then set `RESEND_API_KEY`, `EMAIL_FROM` (an address on the verified domain), and `CONTACT_RECIPIENT` in the Render backend environment. Render automatically uses Resend when its API key is present; Gmail SMTP is retained for local development with `EMAIL_PROVIDER=gmail`, `EMAIL_USER`, and `EMAIL_PASS` (a Gmail App Password). Set `MONGODB_DB_NAME`, `MONGODB_URI`, and `FRONTEND_URL=https://jivon-vai-five.vercel.app` as well, then redeploy the backend. For local development, set `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
-
-## Production build
-
-Frontend production build:
+Install dependencies separately for each application:
 
 ```bash
-cd frontend
-npm run build
+npm --prefix backend install
+npm --prefix frontend install
 ```
 
-## Default local app URLs
+Create `backend/.env` using [backend/.env.example](./backend/.env.example). Set the MongoDB connection string, database name, allowed frontend origin, and email provider credentials. Use placeholders in shared documentation; keep real values only in your local environment or hosting provider's encrypted settings.
 
-- Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:5000/api`
+For local email delivery with Gmail, configure `EMAIL_PROVIDER=gmail`, `EMAIL_USER`, and `EMAIL_PASS` in `backend/.env`. For production, use Resend; see [backend/README.md](./backend/README.md#email-configuration).
 
-## Notes
+Start the backend and frontend in separate terminals:
 
-- Projects, services, optimized WebP images, and 720p MP4 videos are served from the frontend's local data and `public/projects` assets.
-- The backend validates and stores contact form submissions and email notification status in MongoDB; a background worker sends and retries email notifications when the provider is configured.
+```bash
+npm --prefix backend run dev
+npm --prefix frontend run dev
+```
 
-## Architecture
+The local frontend is normally available at `http://localhost:5173`; the API is normally available at `http://localhost:5000`. The frontend API URL can be set in `frontend/.env`:
 
-The frontend owns the portfolio content and optimized media. The backend exposes a contact endpoint that validates and stores each message and its email-outbox status in MongoDB. A background worker sends pending email notifications and retries temporary failures.
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
 
-## API overview
+## Verification
 
-- `POST /api/contact/send-email` — validate and store a contact enquiry and queue an email notification (`emailNotification: "pending"`); email retries and delivery status are tracked in the same MongoDB document
-
-## Security notes
-
-- `.env` files and dependency folders are ignored by Git; only `.env.example` files are intended for version control.
-- CORS is controlled by `FRONTEND_URL`.
-- Helmet security headers and a rate limit protect the contact endpoint.
-- Contact input is validated on the server and rate-limited.
-
-## Testing and verification
-
-Run the project checks from the repository root:
+Run the backend tests, frontend lint, and frontend production build from the repository root:
 
 ```bash
 npm --prefix backend test
@@ -107,12 +90,64 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-Backend tests cover contact validation, durable email queue processing/retries, and both Resend API and local Gmail SMTP delivery paths. Frontend linting uses ESLint's recommended rules.
+## Deployment
 
-## Deployment notes
+### Backend — Render
 
-Before deployment, configure production values for `FRONTEND_URL`, `MONGODB_URI`, `MONGODB_DB_NAME`, `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM`, and `CONTACT_RECIPIENT`. Verify the Resend sender domain and production frontend origin. Do not deploy the local `.env` file.
+Set the following in the Render service environment. Never put actual secrets in this README or commit them to Git.
 
-The Vercel frontend configuration rewrites client-side routes to the app entrypoint so direct visits and refreshes on routes such as `/about` and `/contact` work.
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | HTTP port supplied by Render |
+| `FRONTEND_URL` | Production frontend origin: `https://jivon-vai-five.vercel.app` |
+| `MONGODB_URI` | MongoDB connection string |
+| `MONGODB_DB_NAME` | Database name; defaults to `ArcformaStudio` |
+| `RESEND_API_KEY` | Resend API key |
+| `EMAIL_FROM` | Sender address on a domain verified with Resend |
+| `CONTACT_RECIPIENT` | Inbox that should receive contact enquiries |
 
-Original project media is kept locally under the ignored `frontend/media-originals/projects/` directory. To regenerate the deployable WebP images and optimized MP4s, place source media there and run `npm run optimize:media` from `frontend/`.
+Render's free web services cannot send email over Gmail SMTP ports. On Render the API selects Resend, so configure the Resend key and sender address. Resend may restrict recipients when using an unverified/test sender; verify a domain and use an address on that domain to send to your chosen inbox. Allow the Render service to connect to the MongoDB Atlas cluster in Atlas Network Access.
+
+### Frontend — Vercel
+
+Set `VITE_API_BASE_URL` to the deployed backend API base:
+
+```env
+VITE_API_BASE_URL=https://arcforma-studio.onrender.com/api
+```
+
+Vite embeds this value at build time, so redeploy the frontend after changing it. The Vercel configuration rewrites client-side routes to the application entry point.
+
+Render's free service can spin down after inactivity. The first request after a quiet period may be slower while the service starts; this cold start is separate from email delivery.
+
+## Security and privacy
+
+### Keep out of GitHub
+
+- Real `.env` files and local environment overrides. Commit only sanitized `.env.example` templates with placeholders.
+- `frontend/media-originals/`, which can contain large, unpublished source images and videos.
+- `node_modules/`, build output (`dist/`, `build/`), local logs, and generated error reports.
+- Private keys, certificates, local credential stores, database backups, and contact-data exports.
+
+The repository `.gitignore` files exclude these common local/private files. Ignore rules do not remove files that were already committed, so check GitHub's file list before publishing.
+
+- Keep database credentials and provider API keys private. `.env.example` files must contain placeholders only.
+- Only frontend-exposed Vite variables (`VITE_*`) belong in the browser bundle. Do not put secrets in frontend environment variables.
+- Configure CORS with the deployed frontend origin and only the local development origins you need.
+- Contact request bodies are limited in size, validated on the server, and rate limited.
+- Store only contact information needed to respond to enquiries, and restrict access to the MongoDB project and provider dashboard.
+- Protect, back up, and retain contact data in accordance with your privacy requirements.
+- If a credential was ever committed, deleting the file is not sufficient: revoke/rotate it and remove it from Git history before making the repository public.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Enquiry saved but email missing | Inspect the document's `emailNotification` and `emailLastError` fields, Render logs, Resend API logs, recipient address, sender-domain verification, and spam folder. |
+| `not_configured` status | Confirm `RESEND_API_KEY`, `EMAIL_FROM`, and `CONTACT_RECIPIENT` are set on Render, then redeploy the backend. |
+| Resend returns HTTP 401 | Replace the invalid or revoked API key in Render and redeploy. |
+| Resend rejects the sender or recipient | Verify the sending domain and check Resend's account-level recipient restrictions. |
+| Frontend cannot reach the API | Check Vercel's `VITE_API_BASE_URL`, Render's `FRONTEND_URL`, and both deployment logs. |
+| First request is unusually slow | The Render free service may be waking from a spin-down. Subsequent requests should avoid that particular cold start. |
+
+For application-specific instructions, see [frontend/README.md](./frontend/README.md) and [backend/README.md](./backend/README.md).
