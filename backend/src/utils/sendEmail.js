@@ -63,13 +63,14 @@ ${contactData.message}`;
           from: env.EMAIL_FROM,
           to: [recipient],
           reply_to: contactData.email,
-          subject: "New Contact Form Message",
+          subject: `New enquiry from ${contactData.name}`,
           text,
         }),
         signal: AbortSignal.timeout(10000),
       });
 
       if (!response.ok) {
+        const detail = await response.text();
         throw new Error(`Resend API returned HTTP ${response.status}.`);
       }
 
@@ -96,7 +97,7 @@ ${contactData.message}`;
       from: env.EMAIL_USER,
       replyTo: contactData.email,
       to: recipient,
-      subject: "New Contact Form Message",
+      subject: `New enquiry from ${contactData.name}`,
       text,
     });
   };

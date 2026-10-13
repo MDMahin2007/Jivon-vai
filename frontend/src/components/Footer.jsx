@@ -68,7 +68,7 @@ export default function Footer() {
             <li>
               <Link
                 to="/running-project"
-                className="hover:text-primary transition-colors duration-300 text-primary/80"
+                className="hover:text-primary transition-colors duration-300"
               >
                 Running Project
               </Link>
